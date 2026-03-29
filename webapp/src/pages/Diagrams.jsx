@@ -169,15 +169,15 @@ function RenderIcon({ icon, x, y, color }) {
 const diagramConfigs = {
   DSGAI01: {
     nodes: [
-      { id: 'attacker', icon: 'user', label: 'Attacker', x: 60, y: 200, color: '#f87171' },
-      { id: 'llm', icon: 'cloud', label: 'LLM / LoRA', x: 300, y: 80, color: '#60a5fa' },
-      { id: 'training', icon: 'database', label: 'Training Data', x: 140, y: 80, color: '#2dd4bf' },
-      { id: 'vdb', icon: 'vectordb', label: 'Vector Store', x: 300, y: 200, color: '#2dd4bf' },
-      { id: 'rag', icon: 'server', label: 'RAG Pipeline', x: 300, y: 320, color: '#a78bfa' },
-      { id: 'docs', icon: 'document', label: 'Corp Docs', x: 140, y: 320, color: '#fbbf24' },
-      { id: 'output', icon: 'document', label: 'PII / Secrets', x: 500, y: 200, color: '#f87171' },
-      { id: 'logs', icon: 'server', label: 'Logs / Traces', x: 500, y: 320, color: '#a78bfa' },
-      { id: 'victim', icon: 'user', label: 'Data Subject', x: 640, y: 200, color: '#60a5fa' },
+      { id: 'attacker', icon: 'user', label: 'Attacker', x: 77, y: 225, color: '#f87171' },
+      { id: 'llm', icon: 'cloud', label: 'LLM / LoRA', x: 386, y: 90, color: '#60a5fa' },
+      { id: 'training', icon: 'database', label: 'Training Data', x: 180, y: 90, color: '#2dd4bf' },
+      { id: 'vdb', icon: 'vectordb', label: 'Vector Store', x: 386, y: 225, color: '#2dd4bf' },
+      { id: 'rag', icon: 'server', label: 'RAG Pipeline', x: 386, y: 360, color: '#a78bfa' },
+      { id: 'docs', icon: 'document', label: 'Corp Docs', x: 180, y: 360, color: '#fbbf24' },
+      { id: 'output', icon: 'document', label: 'PII / Secrets', x: 643, y: 225, color: '#f87171' },
+      { id: 'logs', icon: 'server', label: 'Logs / Traces', x: 643, y: 360, color: '#a78bfa' },
+      { id: 'victim', icon: 'user', label: 'Data Subject', x: 823, y: 225, color: '#60a5fa' },
     ],
     edges: [
       { from: 'attacker', to: 'llm', color: '#f87171', animated: true, label: 'Extract', labelPos: 0.3 },
@@ -189,20 +189,20 @@ const diagramConfigs = {
       { from: 'vdb', to: 'output', color: '#f87171', animated: true, label: 'Retrieved PII', labelPos: 0.7 },
       { from: 'output', to: 'logs', color: '#f87171', animated: true, label: 'Logged' },
     ],
-    dangerZone: { x: 420, y: 130, width: 160, height: 160, label: 'Sensitive Output' },
+    dangerZone: { x: 540, y: 146, width: 206, height: 180, label: 'Sensitive Output' },
   },
 
   DSGAI02: {
     nodes: [
-      { id: 'operator', icon: 'user', label: 'Operator', x: 60, y: 80, color: '#60a5fa' },
-      { id: 'agent', icon: 'agent', label: 'Orchestrator', x: 200, y: 80, color: '#e879f9' },
-      { id: 'subagent', icon: 'agent', label: 'Sub-Agent', x: 380, y: 80, color: '#e879f9' },
-      { id: 'token', icon: 'lock', label: 'OAuth Token', x: 200, y: 200, color: '#facc15' },
-      { id: 'vault', icon: 'server', label: 'Secret Store', x: 60, y: 200, color: '#a78bfa' },
-      { id: 'datatier', icon: 'database', label: 'Data Tier', x: 560, y: 80, color: '#2dd4bf' },
-      { id: 'poison', icon: 'document', label: 'Injected Doc', x: 380, y: 200, color: '#f87171' },
-      { id: 'nhi', icon: 'lock', label: 'Stale Keys', x: 380, y: 320, color: '#f87171' },
-      { id: 'exfil', icon: 'user', label: 'Attacker', x: 560, y: 200, color: '#f87171' },
+      { id: 'operator', icon: 'user', label: 'Operator', x: 77, y: 90, color: '#60a5fa' },
+      { id: 'agent', icon: 'agent', label: 'Orchestrator', x: 257, y: 90, color: '#e879f9' },
+      { id: 'subagent', icon: 'agent', label: 'Sub-Agent', x: 489, y: 90, color: '#e879f9' },
+      { id: 'token', icon: 'lock', label: 'OAuth Token', x: 257, y: 225, color: '#facc15' },
+      { id: 'vault', icon: 'server', label: 'Secret Store', x: 77, y: 225, color: '#a78bfa' },
+      { id: 'datatier', icon: 'database', label: 'Data Tier', x: 720, y: 90, color: '#2dd4bf' },
+      { id: 'poison', icon: 'document', label: 'Injected Doc', x: 489, y: 225, color: '#f87171' },
+      { id: 'nhi', icon: 'lock', label: 'Stale Keys', x: 489, y: 360, color: '#f87171' },
+      { id: 'exfil', icon: 'user', label: 'Attacker', x: 720, y: 225, color: '#f87171' },
     ],
     edges: [
       { from: 'operator', to: 'agent', color: '#60a5fa', animated: true, label: 'Full OAuth', labelPos: 0.3 },
@@ -214,20 +214,20 @@ const diagramConfigs = {
       { from: 'datatier', to: 'exfil', color: '#f87171', animated: true, label: 'Exfiltrate', labelPos: 0.3 },
       { from: 'nhi', to: 'exfil', color: '#f87171', animated: true, label: 'Orphan creds', labelPos: 0.7 },
     ],
-    dangerZone: { x: 310, y: 130, width: 150, height: 140, label: 'Token Inheritance' },
+    dangerZone: { x: 399, y: 146, width: 193, height: 158, label: 'Token Inheritance' },
   },
 
   DSGAI03: {
     nodes: [
-      { id: 'employee', icon: 'user', label: 'Employee', x: 60, y: 200, color: '#60a5fa' },
-      { id: 'corpdata', icon: 'database', label: 'Corp Data', x: 60, y: 320, color: '#2dd4bf' },
-      { id: 'casb', icon: 'firewall', label: 'CASB / DLP', x: 200, y: 200, color: '#f87171' },
-      { id: 'chatgpt', icon: 'cloud', label: 'ChatGPT etc.', x: 380, y: 80, color: '#60a5fa' },
-      { id: 'saasai', icon: 'cloud', label: 'SaaS + AI', x: 380, y: 200, color: '#60a5fa' },
-      { id: 'internal', icon: 'server', label: 'Ungoverned Tool', x: 380, y: 320, color: '#a78bfa' },
-      { id: 'vendor', icon: 'server', label: 'Vendor Storage', x: 560, y: 80, color: '#a78bfa' },
-      { id: 'train', icon: 'document', label: 'Trains on Data', x: 560, y: 200, color: '#f87171' },
-      { id: 'breach', icon: 'user', label: 'Breach / Leak', x: 640, y: 320, color: '#f87171' },
+      { id: 'employee', icon: 'user', label: 'Employee', x: 77, y: 225, color: '#60a5fa' },
+      { id: 'corpdata', icon: 'database', label: 'Corp Data', x: 77, y: 360, color: '#2dd4bf' },
+      { id: 'casb', icon: 'firewall', label: 'CASB / DLP', x: 257, y: 225, color: '#f87171' },
+      { id: 'chatgpt', icon: 'cloud', label: 'ChatGPT etc.', x: 489, y: 90, color: '#60a5fa' },
+      { id: 'saasai', icon: 'cloud', label: 'SaaS + AI', x: 489, y: 225, color: '#60a5fa' },
+      { id: 'internal', icon: 'server', label: 'Ungoverned Tool', x: 489, y: 360, color: '#a78bfa' },
+      { id: 'vendor', icon: 'server', label: 'Vendor Storage', x: 720, y: 90, color: '#a78bfa' },
+      { id: 'train', icon: 'document', label: 'Trains on Data', x: 720, y: 225, color: '#f87171' },
+      { id: 'breach', icon: 'user', label: 'Breach / Leak', x: 823, y: 360, color: '#f87171' },
     ],
     edges: [
       { from: 'employee', to: 'chatgpt', color: '#f87171', animated: true, label: 'Pastes PII', labelPos: 0.3 },
@@ -238,20 +238,20 @@ const diagramConfigs = {
       { from: 'saasai', to: 'train', color: '#f87171', animated: true, label: 'Used to train' },
       { from: 'vendor', to: 'breach', color: '#f87171', animated: true, label: 'Vendor breach' },
     ],
-    dangerZone: { x: 300, y: 30, width: 320, height: 130, label: 'No Governance' },
+    dangerZone: { x: 386, y: 34, width: 411, height: 146, label: 'No Governance' },
   },
 
   DSGAI04: {
     nodes: [
-      { id: 'attacker', icon: 'user', label: 'Attacker', x: 60, y: 80, color: '#f87171' },
-      { id: 'hub', icon: 'cloud', label: 'Model Hub', x: 200, y: 80, color: '#60a5fa' },
-      { id: 'artifact', icon: 'document', label: 'Pickle / GGUF', x: 350, y: 80, color: '#f87171' },
-      { id: 'registry', icon: 'server', label: 'Model Registry', x: 500, y: 80, color: '#a78bfa' },
-      { id: 'pipeline', icon: 'server', label: 'ML Pipeline', x: 350, y: 200, color: '#a78bfa' },
-      { id: 'ragcorpus', icon: 'database', label: 'RAG Corpus', x: 200, y: 320, color: '#2dd4bf' },
-      { id: 'vdb', icon: 'vectordb', label: 'Vector Store', x: 350, y: 320, color: '#2dd4bf' },
-      { id: 'model', icon: 'cloud', label: 'Prod Model', x: 560, y: 200, color: '#60a5fa' },
-      { id: 'victim', icon: 'user', label: 'Users', x: 640, y: 320, color: '#60a5fa' },
+      { id: 'attacker', icon: 'user', label: 'Attacker', x: 77, y: 90, color: '#f87171' },
+      { id: 'hub', icon: 'cloud', label: 'Model Hub', x: 257, y: 90, color: '#60a5fa' },
+      { id: 'artifact', icon: 'document', label: 'Pickle / GGUF', x: 450, y: 90, color: '#f87171' },
+      { id: 'registry', icon: 'server', label: 'Model Registry', x: 643, y: 90, color: '#a78bfa' },
+      { id: 'pipeline', icon: 'server', label: 'ML Pipeline', x: 450, y: 225, color: '#a78bfa' },
+      { id: 'ragcorpus', icon: 'database', label: 'RAG Corpus', x: 257, y: 360, color: '#2dd4bf' },
+      { id: 'vdb', icon: 'vectordb', label: 'Vector Store', x: 450, y: 360, color: '#2dd4bf' },
+      { id: 'model', icon: 'cloud', label: 'Prod Model', x: 720, y: 225, color: '#60a5fa' },
+      { id: 'victim', icon: 'user', label: 'Users', x: 823, y: 360, color: '#60a5fa' },
     ],
     edges: [
       { from: 'attacker', to: 'hub', color: '#f87171', animated: true, label: 'Upload bad', labelPos: 0.3 },
@@ -264,20 +264,20 @@ const diagramConfigs = {
       { from: 'vdb', to: 'model', color: '#f87171', animated: true, label: 'Poison context', labelPos: 0.7 },
       { from: 'model', to: 'victim', color: '#f87171', animated: true, label: 'Backdoor out' },
     ],
-    dangerZone: { x: 120, y: 30, width: 310, height: 110, label: 'Supply Chain Attack' },
+    dangerZone: { x: 154, y: 34, width: 399, height: 124, label: 'Supply Chain Attack' },
   },
 
   DSGAI05: {
     nodes: [
-      { id: 'attacker', icon: 'user', label: 'Attacker', x: 60, y: 120, color: '#f87171' },
-      { id: 'input', icon: 'document', label: '../../etc/cron', x: 200, y: 80, color: '#f87171' },
-      { id: 'schema', icon: 'server', label: 'Schema Check', x: 350, y: 80, color: '#a78bfa' },
-      { id: 'snapshot', icon: 'document', label: 'Qdrant Snap', x: 200, y: 200, color: '#fbbf24' },
-      { id: 'vectordb', icon: 'vectordb', label: 'Vector Store', x: 350, y: 200, color: '#2dd4bf' },
-      { id: 'filesystem', icon: 'server', label: 'Filesystem', x: 500, y: 120, color: '#f87171' },
-      { id: 'labelq', icon: 'document', label: 'Label Queue', x: 200, y: 320, color: '#fbbf24' },
-      { id: 'pipeline', icon: 'server', label: 'Training Pipe', x: 350, y: 320, color: '#a78bfa' },
-      { id: 'corrupt', icon: 'database', label: 'Corrupted', x: 560, y: 260, color: '#f87171' },
+      { id: 'attacker', icon: 'user', label: 'Attacker', x: 77, y: 135, color: '#f87171' },
+      { id: 'input', icon: 'document', label: '../../etc/cron', x: 257, y: 90, color: '#f87171' },
+      { id: 'schema', icon: 'server', label: 'Schema Check', x: 450, y: 90, color: '#a78bfa' },
+      { id: 'snapshot', icon: 'document', label: 'Qdrant Snap', x: 257, y: 225, color: '#fbbf24' },
+      { id: 'vectordb', icon: 'vectordb', label: 'Vector Store', x: 450, y: 225, color: '#2dd4bf' },
+      { id: 'filesystem', icon: 'server', label: 'Filesystem', x: 643, y: 135, color: '#f87171' },
+      { id: 'labelq', icon: 'document', label: 'Label Queue', x: 257, y: 360, color: '#fbbf24' },
+      { id: 'pipeline', icon: 'server', label: 'Training Pipe', x: 450, y: 360, color: '#a78bfa' },
+      { id: 'corrupt', icon: 'database', label: 'Corrupted', x: 720, y: 293, color: '#f87171' },
     ],
     edges: [
       { from: 'attacker', to: 'input', color: '#f87171', animated: true, label: 'Path traversal', labelPos: 0.3 },
@@ -289,19 +289,19 @@ const diagramConfigs = {
       { from: 'labelq', to: 'pipeline', color: '#f87171', animated: true, label: 'Silent corrupt' },
       { from: 'pipeline', to: 'corrupt', color: '#f87171', animated: true, label: 'Bad model' },
     ],
-    dangerZone: { x: 430, y: 60, width: 160, height: 120, label: 'CVE-2024-3584' },
+    dangerZone: { x: 553, y: 68, width: 206, height: 135, label: 'CVE-2024-3584' },
   },
 
   DSGAI06: {
     nodes: [
-      { id: 'user', icon: 'user', label: 'User', x: 60, y: 200, color: '#60a5fa' },
-      { id: 'llm', icon: 'cloud', label: 'LLM Core', x: 200, y: 200, color: '#60a5fa' },
-      { id: 'context', icon: 'document', label: 'Full Context', x: 200, y: 80, color: '#fbbf24' },
-      { id: 'mcp', icon: 'agent', label: 'MCP Server', x: 400, y: 80, color: '#e879f9' },
-      { id: 'plugin', icon: 'agent', label: 'Plugin (v2)', x: 400, y: 200, color: '#e879f9' },
-      { id: 'a2a', icon: 'agent', label: 'Rogue Agent', x: 400, y: 320, color: '#f87171' },
-      { id: 'exfil', icon: 'server', label: 'C2 Server', x: 580, y: 200, color: '#f87171' },
-      { id: 'metadata', icon: 'document', label: 'Tool Manifest', x: 560, y: 80, color: '#f87171' },
+      { id: 'user', icon: 'user', label: 'User', x: 77, y: 225, color: '#60a5fa' },
+      { id: 'llm', icon: 'cloud', label: 'LLM Core', x: 257, y: 225, color: '#60a5fa' },
+      { id: 'context', icon: 'document', label: 'Full Context', x: 257, y: 90, color: '#fbbf24' },
+      { id: 'mcp', icon: 'agent', label: 'MCP Server', x: 514, y: 90, color: '#e879f9' },
+      { id: 'plugin', icon: 'agent', label: 'Plugin (v2)', x: 514, y: 225, color: '#e879f9' },
+      { id: 'a2a', icon: 'agent', label: 'Rogue Agent', x: 514, y: 360, color: '#f87171' },
+      { id: 'exfil', icon: 'server', label: 'C2 Server', x: 746, y: 225, color: '#f87171' },
+      { id: 'metadata', icon: 'document', label: 'Tool Manifest', x: 720, y: 90, color: '#f87171' },
     ],
     edges: [
       { from: 'user', to: 'llm', color: '#60a5fa', animated: true, label: 'Prompt' },
@@ -313,20 +313,20 @@ const diagramConfigs = {
       { from: 'metadata', to: 'mcp', color: '#f87171', animated: true, label: 'Bad manifest', labelPos: 0.7 },
       { from: 'mcp', to: 'exfil', color: '#f87171', animated: true, label: 'Drain context', labelPos: 0.3 },
     ],
-    dangerZone: { x: 320, y: 30, width: 180, height: 340, label: 'Untrusted Endpoints' },
+    dangerZone: { x: 411, y: 34, width: 231, height: 383, label: 'Untrusted Endpoints' },
   },
 
   DSGAI07: {
     nodes: [
-      { id: 'source', icon: 'database', label: 'Source DB', x: 60, y: 200, color: '#2dd4bf' },
-      { id: 'label', icon: 'document', label: 'Classified', x: 60, y: 80, color: '#facc15' },
-      { id: 'pipeline', icon: 'server', label: 'Ingest Pipe', x: 220, y: 200, color: '#a78bfa' },
-      { id: 'embeddings', icon: 'vectordb', label: 'Embeddings', x: 380, y: 80, color: '#2dd4bf' },
-      { id: 'weights', icon: 'cloud', label: 'Model Weights', x: 380, y: 200, color: '#60a5fa' },
-      { id: 'backups', icon: 'database', label: 'Backups', x: 380, y: 320, color: '#2dd4bf' },
-      { id: 'delete', icon: 'lock', label: 'GDPR Delete', x: 60, y: 320, color: '#f87171' },
-      { id: 'nolabel', icon: 'document', label: 'No Labels', x: 560, y: 140, color: '#f87171' },
-      { id: 'persist', icon: 'document', label: 'Data Persists', x: 560, y: 280, color: '#f87171' },
+      { id: 'source', icon: 'database', label: 'Source DB', x: 77, y: 225, color: '#2dd4bf' },
+      { id: 'label', icon: 'document', label: 'Classified', x: 77, y: 90, color: '#facc15' },
+      { id: 'pipeline', icon: 'server', label: 'Ingest Pipe', x: 283, y: 225, color: '#a78bfa' },
+      { id: 'embeddings', icon: 'vectordb', label: 'Embeddings', x: 489, y: 90, color: '#2dd4bf' },
+      { id: 'weights', icon: 'cloud', label: 'Model Weights', x: 489, y: 225, color: '#60a5fa' },
+      { id: 'backups', icon: 'database', label: 'Backups', x: 489, y: 360, color: '#2dd4bf' },
+      { id: 'delete', icon: 'lock', label: 'GDPR Delete', x: 77, y: 360, color: '#f87171' },
+      { id: 'nolabel', icon: 'document', label: 'No Labels', x: 720, y: 158, color: '#f87171' },
+      { id: 'persist', icon: 'document', label: 'Data Persists', x: 720, y: 315, color: '#f87171' },
     ],
     edges: [
       { from: 'label', to: 'source', color: '#facc15', animated: true, label: 'Classified' },
@@ -339,19 +339,19 @@ const diagramConfigs = {
       { from: 'weights', to: 'persist', color: '#f87171', animated: true, label: 'Still active', labelPos: 0.3 },
       { from: 'backups', to: 'persist', color: '#f87171', animated: true, label: 'Retained', labelPos: 0.7 },
     ],
-    dangerZone: { x: 480, y: 80, width: 160, height: 260, label: 'Label Gap' },
+    dangerZone: { x: 617, y: 90, width: 206, height: 293, label: 'Label Gap' },
   },
 
   DSGAI08: {
     nodes: [
-      { id: 'regulator', icon: 'user', label: 'Regulator', x: 60, y: 80, color: '#facc15' },
-      { id: 'dsr', icon: 'document', label: 'Art.17 Request', x: 200, y: 80, color: '#fbbf24' },
-      { id: 'system', icon: 'server', label: 'AI Platform', x: 350, y: 200, color: '#a78bfa' },
-      { id: 'sourcedb', icon: 'database', label: 'Source (Deleted)', x: 200, y: 200, color: '#2dd4bf' },
-      { id: 'weights', icon: 'cloud', label: 'Weights (Stuck)', x: 500, y: 120, color: '#f87171' },
-      { id: 'vectors', icon: 'vectordb', label: 'Vectors (Live)', x: 500, y: 280, color: '#f87171' },
-      { id: 'evidence', icon: 'document', label: 'No Evidence', x: 640, y: 200, color: '#f87171' },
-      { id: 'fine', icon: 'document', label: '4% Revenue', x: 640, y: 80, color: '#f87171' },
+      { id: 'regulator', icon: 'user', label: 'Regulator', x: 77, y: 90, color: '#facc15' },
+      { id: 'dsr', icon: 'document', label: 'Art.17 Request', x: 257, y: 90, color: '#fbbf24' },
+      { id: 'system', icon: 'server', label: 'AI Platform', x: 450, y: 225, color: '#a78bfa' },
+      { id: 'sourcedb', icon: 'database', label: 'Source (Deleted)', x: 257, y: 225, color: '#2dd4bf' },
+      { id: 'weights', icon: 'cloud', label: 'Weights (Stuck)', x: 643, y: 135, color: '#f87171' },
+      { id: 'vectors', icon: 'vectordb', label: 'Vectors (Live)', x: 643, y: 315, color: '#f87171' },
+      { id: 'evidence', icon: 'document', label: 'No Evidence', x: 823, y: 225, color: '#f87171' },
+      { id: 'fine', icon: 'document', label: '4% Revenue', x: 823, y: 90, color: '#f87171' },
     ],
     edges: [
       { from: 'regulator', to: 'dsr', color: '#facc15', animated: true, label: 'Audit demand' },
@@ -363,19 +363,19 @@ const diagramConfigs = {
       { from: 'vectors', to: 'evidence', color: '#f87171', animated: true, label: 'No proof', labelPos: 0.7 },
       { from: 'evidence', to: 'fine', color: '#f87171', animated: true, label: 'Enforcement' },
     ],
-    dangerZone: { x: 420, y: 60, width: 150, height: 280, label: 'Compliance Gap' },
+    dangerZone: { x: 540, y: 68, width: 193, height: 315, label: 'Compliance Gap' },
   },
 
   DSGAI09: {
     nodes: [
-      { id: 'user', icon: 'user', label: 'User Upload', x: 60, y: 120, color: '#60a5fa' },
-      { id: 'image', icon: 'document', label: 'Image + EXIF', x: 200, y: 80, color: '#fbbf24' },
-      { id: 'audio', icon: 'document', label: 'Audio / Video', x: 200, y: 280, color: '#fbbf24' },
-      { id: 'ocr', icon: 'server', label: 'OCR Engine', x: 380, y: 80, color: '#a78bfa' },
-      { id: 'asr', icon: 'server', label: 'ASR / STT', x: 380, y: 280, color: '#a78bfa' },
-      { id: 'storage', icon: 'database', label: 'Bucket (Public)', x: 540, y: 180, color: '#f87171' },
-      { id: 'biometric', icon: 'document', label: 'Biometric Data', x: 380, y: 180, color: '#f87171' },
-      { id: 'attacker', icon: 'user', label: 'Attacker', x: 640, y: 80, color: '#f87171' },
+      { id: 'user', icon: 'user', label: 'User Upload', x: 77, y: 135, color: '#60a5fa' },
+      { id: 'image', icon: 'document', label: 'Image + EXIF', x: 257, y: 90, color: '#fbbf24' },
+      { id: 'audio', icon: 'document', label: 'Audio / Video', x: 257, y: 315, color: '#fbbf24' },
+      { id: 'ocr', icon: 'server', label: 'OCR Engine', x: 489, y: 90, color: '#a78bfa' },
+      { id: 'asr', icon: 'server', label: 'ASR / STT', x: 489, y: 315, color: '#a78bfa' },
+      { id: 'storage', icon: 'database', label: 'Bucket (Public)', x: 694, y: 203, color: '#f87171' },
+      { id: 'biometric', icon: 'document', label: 'Biometric Data', x: 489, y: 203, color: '#f87171' },
+      { id: 'attacker', icon: 'user', label: 'Attacker', x: 823, y: 90, color: '#f87171' },
     ],
     edges: [
       { from: 'user', to: 'image', color: '#60a5fa', animated: true, label: 'Upload', labelPos: 0.3 },
@@ -387,19 +387,19 @@ const diagramConfigs = {
       { from: 'biometric', to: 'storage', color: '#f87171', animated: true, label: 'No labels' },
       { from: 'storage', to: 'attacker', color: '#f87171', animated: true, label: 'Misconfig' },
     ],
-    dangerZone: { x: 460, y: 110, width: 160, height: 150, label: 'Art.9 Violation' },
+    dangerZone: { x: 591, y: 124, width: 206, height: 169, label: 'Art.9 Violation' },
   },
 
   DSGAI10: {
     nodes: [
-      { id: 'realdata', icon: 'database', label: 'Real PII Data', x: 60, y: 200, color: '#2dd4bf' },
-      { id: 'deid', icon: 'server', label: 'De-ID Pipeline', x: 200, y: 200, color: '#a78bfa' },
-      { id: 'synthetic', icon: 'document', label: '"Anonymous"', x: 350, y: 120, color: '#fbbf24' },
-      { id: 'model', icon: 'cloud', label: 'Fine-tuned', x: 500, y: 120, color: '#60a5fa' },
-      { id: 'shared', icon: 'document', label: 'Shared Broadly', x: 500, y: 260, color: '#fbbf24' },
-      { id: 'attacker', icon: 'user', label: 'Attacker', x: 640, y: 200, color: '#f87171' },
-      { id: 'external', icon: 'database', label: 'Public Data', x: 640, y: 80, color: '#f87171' },
-      { id: 'reid', icon: 'document', label: 'Re-identified', x: 640, y: 320, color: '#f87171' },
+      { id: 'realdata', icon: 'database', label: 'Real PII Data', x: 77, y: 225, color: '#2dd4bf' },
+      { id: 'deid', icon: 'server', label: 'De-ID Pipeline', x: 257, y: 225, color: '#a78bfa' },
+      { id: 'synthetic', icon: 'document', label: '"Anonymous"', x: 450, y: 135, color: '#fbbf24' },
+      { id: 'model', icon: 'cloud', label: 'Fine-tuned', x: 643, y: 135, color: '#60a5fa' },
+      { id: 'shared', icon: 'document', label: 'Shared Broadly', x: 643, y: 293, color: '#fbbf24' },
+      { id: 'attacker', icon: 'user', label: 'Attacker', x: 823, y: 225, color: '#f87171' },
+      { id: 'external', icon: 'database', label: 'Public Data', x: 823, y: 90, color: '#f87171' },
+      { id: 'reid', icon: 'document', label: 'Re-identified', x: 823, y: 360, color: '#f87171' },
     ],
     edges: [
       { from: 'realdata', to: 'deid', color: '#2dd4bf', animated: true, label: 'Export' },
@@ -410,19 +410,19 @@ const diagramConfigs = {
       { from: 'external', to: 'attacker', color: '#f87171', animated: true, label: 'Quasi-IDs', labelPos: 0.7 },
       { from: 'attacker', to: 'reid', color: '#f87171', animated: true, label: 'Linkage attack' },
     ],
-    dangerZone: { x: 560, y: 50, width: 130, height: 150, label: 'Re-identification' },
+    dangerZone: { x: 720, y: 56, width: 167, height: 169, label: 'Re-identification' },
   },
 
   DSGAI11: {
     nodes: [
-      { id: 'tenantA', icon: 'user', label: 'Tenant A', x: 60, y: 80, color: '#60a5fa' },
-      { id: 'tenantB', icon: 'user', label: 'Tenant B', x: 60, y: 320, color: '#4ade80' },
-      { id: 'gateway', icon: 'server', label: 'API Gateway', x: 220, y: 200, color: '#a78bfa' },
-      { id: 'kvcache', icon: 'server', label: 'KV Cache', x: 380, y: 80, color: '#f87171' },
-      { id: 'vdb', icon: 'vectordb', label: 'Shared Index', x: 380, y: 200, color: '#2dd4bf' },
-      { id: 'sessions', icon: 'lock', label: 'Session Store', x: 380, y: 320, color: '#f87171' },
-      { id: 'llm', icon: 'cloud', label: 'LLM', x: 560, y: 200, color: '#60a5fa' },
-      { id: 'leak', icon: 'document', label: 'A Data in B', x: 640, y: 320, color: '#f87171' },
+      { id: 'tenantA', icon: 'user', label: 'Tenant A', x: 77, y: 90, color: '#60a5fa' },
+      { id: 'tenantB', icon: 'user', label: 'Tenant B', x: 77, y: 360, color: '#4ade80' },
+      { id: 'gateway', icon: 'server', label: 'API Gateway', x: 283, y: 225, color: '#a78bfa' },
+      { id: 'kvcache', icon: 'server', label: 'KV Cache', x: 489, y: 90, color: '#f87171' },
+      { id: 'vdb', icon: 'vectordb', label: 'Shared Index', x: 489, y: 225, color: '#2dd4bf' },
+      { id: 'sessions', icon: 'lock', label: 'Session Store', x: 489, y: 360, color: '#f87171' },
+      { id: 'llm', icon: 'cloud', label: 'LLM', x: 720, y: 225, color: '#60a5fa' },
+      { id: 'leak', icon: 'document', label: 'A Data in B', x: 823, y: 360, color: '#f87171' },
     ],
     edges: [
       { from: 'tenantA', to: 'gateway', color: '#60a5fa', animated: true, label: 'Query', labelPos: 0.3 },
@@ -434,19 +434,19 @@ const diagramConfigs = {
       { from: 'kvcache', to: 'llm', color: '#f87171', animated: true, label: 'Timing leak', labelPos: 0.3 },
       { from: 'llm', to: 'leak', color: '#f87171', animated: true, label: 'A data to B' },
     ],
-    dangerZone: { x: 300, y: 30, width: 160, height: 340, label: 'Isolation Failure' },
+    dangerZone: { x: 386, y: 34, width: 206, height: 383, label: 'Isolation Failure' },
   },
 
   DSGAI12: {
     nodes: [
-      { id: 'user', icon: 'user', label: 'User', x: 60, y: 200, color: '#60a5fa' },
-      { id: 'llm', icon: 'cloud', label: 'NL-to-SQL LLM', x: 220, y: 200, color: '#60a5fa' },
-      { id: 'sql', icon: 'document', label: 'Generated SQL', x: 380, y: 200, color: '#fbbf24' },
-      { id: 'conn', icon: 'lock', label: 'DBA Account', x: 380, y: 80, color: '#f87171' },
-      { id: 'db1', icon: 'database', label: 'Customer DB', x: 540, y: 120, color: '#2dd4bf' },
-      { id: 'db2', icon: 'database', label: 'Finance DB', x: 540, y: 280, color: '#2dd4bf' },
-      { id: 'exfil', icon: 'document', label: 'UNION Dump', x: 640, y: 200, color: '#f87171' },
-      { id: 'inject', icon: 'document', label: 'RAG Payload', x: 60, y: 80, color: '#f87171' },
+      { id: 'user', icon: 'user', label: 'User', x: 77, y: 225, color: '#60a5fa' },
+      { id: 'llm', icon: 'cloud', label: 'NL-to-SQL LLM', x: 283, y: 225, color: '#60a5fa' },
+      { id: 'sql', icon: 'document', label: 'Generated SQL', x: 489, y: 225, color: '#fbbf24' },
+      { id: 'conn', icon: 'lock', label: 'DBA Account', x: 489, y: 90, color: '#f87171' },
+      { id: 'db1', icon: 'database', label: 'Customer DB', x: 694, y: 135, color: '#2dd4bf' },
+      { id: 'db2', icon: 'database', label: 'Finance DB', x: 694, y: 315, color: '#2dd4bf' },
+      { id: 'exfil', icon: 'document', label: 'UNION Dump', x: 823, y: 225, color: '#f87171' },
+      { id: 'inject', icon: 'document', label: 'RAG Payload', x: 77, y: 90, color: '#f87171' },
     ],
     edges: [
       { from: 'user', to: 'llm', color: '#60a5fa', animated: true, label: 'NL query', labelPos: 0.3 },
@@ -458,19 +458,19 @@ const diagramConfigs = {
       { from: 'db1', to: 'exfil', color: '#f87171', animated: true, label: 'Bulk dump', labelPos: 0.3 },
       { from: 'db2', to: 'exfil', color: '#f87171', animated: true, label: 'Cross-tenant', labelPos: 0.7 },
     ],
-    dangerZone: { x: 300, y: 30, width: 160, height: 130, label: 'DBA-Level Access' },
+    dangerZone: { x: 386, y: 34, width: 206, height: 146, label: 'DBA-Level Access' },
   },
 
   DSGAI13: {
     nodes: [
-      { id: 'attacker', icon: 'user', label: 'Attacker', x: 60, y: 200, color: '#f87171' },
-      { id: 'api', icon: 'router', label: 'Unauth API', x: 220, y: 200, color: '#fb923c' },
-      { id: 'vdb', icon: 'vectordb', label: 'Vector Store', x: 380, y: 200, color: '#2dd4bf' },
-      { id: 'knn', icon: 'document', label: 'k-NN Sweep', x: 220, y: 80, color: '#f87171' },
-      { id: 'snapshot', icon: 'document', label: 'Snapshot File', x: 380, y: 320, color: '#fbbf24' },
-      { id: 'rce', icon: 'server', label: 'Server (RCE)', x: 560, y: 320, color: '#f87171' },
-      { id: 'index', icon: 'document', label: 'Full Index', x: 560, y: 80, color: '#f87171' },
-      { id: 'invert', icon: 'document', label: 'Text Recovery', x: 560, y: 200, color: '#f87171' },
+      { id: 'attacker', icon: 'user', label: 'Attacker', x: 77, y: 225, color: '#f87171' },
+      { id: 'api', icon: 'router', label: 'Unauth API', x: 283, y: 225, color: '#fb923c' },
+      { id: 'vdb', icon: 'vectordb', label: 'Vector Store', x: 489, y: 225, color: '#2dd4bf' },
+      { id: 'knn', icon: 'document', label: 'k-NN Sweep', x: 283, y: 90, color: '#f87171' },
+      { id: 'snapshot', icon: 'document', label: 'Snapshot File', x: 489, y: 360, color: '#fbbf24' },
+      { id: 'rce', icon: 'server', label: 'Server (RCE)', x: 720, y: 360, color: '#f87171' },
+      { id: 'index', icon: 'document', label: 'Full Index', x: 720, y: 90, color: '#f87171' },
+      { id: 'invert', icon: 'document', label: 'Text Recovery', x: 720, y: 225, color: '#f87171' },
     ],
     edges: [
       { from: 'attacker', to: 'api', color: '#f87171', animated: true, label: 'No auth', labelPos: 0.3 },
@@ -482,19 +482,19 @@ const diagramConfigs = {
       { from: 'vdb', to: 'index', color: '#f87171', animated: true, label: 'Reconstruct', labelPos: 0.7 },
       { from: 'index', to: 'invert', color: '#f87171', animated: true, label: 'Embed to text' },
     ],
-    dangerZone: { x: 480, y: 250, width: 160, height: 130, label: 'CVE-2024-3829' },
+    dangerZone: { x: 617, y: 281, width: 206, height: 146, label: 'CVE-2024-3829' },
   },
 
   DSGAI14: {
     nodes: [
-      { id: 'llm', icon: 'cloud', label: 'LLM Runtime', x: 80, y: 200, color: '#60a5fa' },
-      { id: 'debug', icon: 'server', label: 'Debug: ON', x: 240, y: 80, color: '#f87171' },
-      { id: 'logpipe', icon: 'server', label: 'Log Pipeline', x: 240, y: 200, color: '#a78bfa' },
-      { id: 'apm', icon: 'cloud', label: '3rd Party APM', x: 240, y: 320, color: '#60a5fa' },
-      { id: 'siem', icon: 'database', label: 'SIEM', x: 440, y: 200, color: '#2dd4bf' },
-      { id: 'pii', icon: 'document', label: 'Full Prompts', x: 440, y: 80, color: '#f87171' },
-      { id: 'analyst', icon: 'user', label: 'Phished Analyst', x: 600, y: 200, color: '#f87171' },
-      { id: 'export', icon: 'document', label: 'Bulk Export', x: 600, y: 80, color: '#f87171' },
+      { id: 'llm', icon: 'cloud', label: 'LLM Runtime', x: 103, y: 225, color: '#60a5fa' },
+      { id: 'debug', icon: 'server', label: 'Debug: ON', x: 309, y: 90, color: '#f87171' },
+      { id: 'logpipe', icon: 'server', label: 'Log Pipeline', x: 309, y: 225, color: '#a78bfa' },
+      { id: 'apm', icon: 'cloud', label: '3rd Party APM', x: 309, y: 360, color: '#60a5fa' },
+      { id: 'siem', icon: 'database', label: 'SIEM', x: 566, y: 225, color: '#2dd4bf' },
+      { id: 'pii', icon: 'document', label: 'Full Prompts', x: 566, y: 90, color: '#f87171' },
+      { id: 'analyst', icon: 'user', label: 'Phished Analyst', x: 771, y: 225, color: '#f87171' },
+      { id: 'export', icon: 'document', label: 'Bulk Export', x: 771, y: 90, color: '#f87171' },
     ],
     edges: [
       { from: 'llm', to: 'debug', color: '#f87171', animated: true, label: 'Full bodies', labelPos: 0.3 },
@@ -506,19 +506,19 @@ const diagramConfigs = {
       { from: 'siem', to: 'analyst', color: '#f87171', animated: true, label: 'Compromised' },
       { from: 'analyst', to: 'export', color: '#f87171', animated: true, label: 'Months data' },
     ],
-    dangerZone: { x: 160, y: 30, width: 170, height: 110, label: 'Debug Left On' },
+    dangerZone: { x: 206, y: 34, width: 219, height: 124, label: 'Debug Left On' },
   },
 
   DSGAI15: {
     nodes: [
-      { id: 'user', icon: 'user', label: 'User', x: 60, y: 200, color: '#60a5fa' },
-      { id: 'query', icon: 'document', label: '"What is status?"', x: 60, y: 80, color: '#fbbf24' },
-      { id: 'gateway', icon: 'server', label: 'LLM Gateway', x: 240, y: 200, color: '#a78bfa' },
-      { id: 'crm', icon: 'database', label: 'CRM 360°', x: 240, y: 320, color: '#2dd4bf' },
-      { id: 'context', icon: 'document', label: 'SSN + CC + Addr', x: 420, y: 200, color: '#f87171' },
-      { id: 'provider', icon: 'cloud', label: 'External LLM', x: 560, y: 200, color: '#60a5fa' },
-      { id: 'cache', icon: 'server', label: 'Edge Cache', x: 560, y: 320, color: '#f87171' },
-      { id: 'retained', icon: 'document', label: 'Provider Logs', x: 640, y: 80, color: '#f87171' },
+      { id: 'user', icon: 'user', label: 'User', x: 77, y: 225, color: '#60a5fa' },
+      { id: 'query', icon: 'document', label: '"What is status?"', x: 77, y: 90, color: '#fbbf24' },
+      { id: 'gateway', icon: 'server', label: 'LLM Gateway', x: 309, y: 225, color: '#a78bfa' },
+      { id: 'crm', icon: 'database', label: 'CRM 360°', x: 309, y: 360, color: '#2dd4bf' },
+      { id: 'context', icon: 'document', label: 'SSN + CC + Addr', x: 540, y: 225, color: '#f87171' },
+      { id: 'provider', icon: 'cloud', label: 'External LLM', x: 720, y: 225, color: '#60a5fa' },
+      { id: 'cache', icon: 'server', label: 'Edge Cache', x: 720, y: 360, color: '#f87171' },
+      { id: 'retained', icon: 'document', label: 'Provider Logs', x: 823, y: 90, color: '#f87171' },
     ],
     edges: [
       { from: 'user', to: 'gateway', color: '#60a5fa', animated: true, label: 'Simple query', labelPos: 0.3 },
@@ -528,19 +528,19 @@ const diagramConfigs = {
       { from: 'provider', to: 'retained', color: '#f87171', animated: true, label: 'Logged', labelPos: 0.3 },
       { from: 'provider', to: 'cache', color: '#f87171', animated: true, label: 'Cached', labelPos: 0.7 },
     ],
-    dangerZone: { x: 340, y: 130, width: 160, height: 140, label: 'PII Over-Sharing' },
+    dangerZone: { x: 437, y: 146, width: 206, height: 158, label: 'PII Over-Sharing' },
   },
 
   DSGAI16: {
     nodes: [
-      { id: 'page', icon: 'browser', label: 'Malicious Page', x: 60, y: 80, color: '#f87171' },
-      { id: 'browser', icon: 'browser', label: 'Browser', x: 220, y: 200, color: '#facc15' },
-      { id: 'extension', icon: 'agent', label: 'AI Extension', x: 380, y: 200, color: '#e879f9' },
-      { id: 'perms', icon: 'lock', label: 'Read All Sites', x: 380, y: 80, color: '#f87171' },
-      { id: 'local', icon: 'server', label: '.env, SSH keys', x: 220, y: 320, color: '#4ade80' },
-      { id: 'intranet', icon: 'database', label: 'Intranet', x: 60, y: 320, color: '#2dd4bf' },
-      { id: 'exfil', icon: 'server', label: 'C2 Server', x: 560, y: 200, color: '#f87171' },
-      { id: 'update', icon: 'document', label: 'Malicious Update', x: 560, y: 80, color: '#f87171' },
+      { id: 'page', icon: 'browser', label: 'Malicious Page', x: 77, y: 90, color: '#f87171' },
+      { id: 'browser', icon: 'browser', label: 'Browser', x: 283, y: 225, color: '#facc15' },
+      { id: 'extension', icon: 'agent', label: 'AI Extension', x: 489, y: 225, color: '#e879f9' },
+      { id: 'perms', icon: 'lock', label: 'Read All Sites', x: 489, y: 90, color: '#f87171' },
+      { id: 'local', icon: 'server', label: '.env, SSH keys', x: 283, y: 360, color: '#4ade80' },
+      { id: 'intranet', icon: 'database', label: 'Intranet', x: 77, y: 360, color: '#2dd4bf' },
+      { id: 'exfil', icon: 'server', label: 'C2 Server', x: 720, y: 225, color: '#f87171' },
+      { id: 'update', icon: 'document', label: 'Malicious Update', x: 720, y: 90, color: '#f87171' },
     ],
     edges: [
       { from: 'page', to: 'browser', color: '#f87171', animated: true, label: '#HashJack' },
@@ -551,19 +551,19 @@ const diagramConfigs = {
       { from: 'extension', to: 'exfil', color: '#f87171', animated: true, label: 'Exfil all' },
       { from: 'update', to: 'extension', color: '#f87171', animated: true, label: 'Supply chain', labelPos: 0.7 },
     ],
-    dangerZone: { x: 300, y: 30, width: 170, height: 120, label: 'Over-Permissioned' },
+    dangerZone: { x: 386, y: 34, width: 219, height: 135, label: 'Over-Permissioned' },
   },
 
   DSGAI17: {
     nodes: [
-      { id: 'user', icon: 'user', label: 'User', x: 60, y: 200, color: '#60a5fa' },
-      { id: 'llm', icon: 'cloud', label: 'LLM', x: 220, y: 200, color: '#60a5fa' },
-      { id: 'primary', icon: 'vectordb', label: 'Primary DB', x: 380, y: 80, color: '#2dd4bf' },
-      { id: 'replica', icon: 'vectordb', label: 'Stale Replica', x: 380, y: 320, color: '#f87171' },
-      { id: 'fail', icon: 'firewall', label: 'Overloaded', x: 560, y: 80, color: '#f87171' },
-      { id: 'deleted', icon: 'document', label: 'DSR Deleted', x: 220, y: 80, color: '#f87171' },
-      { id: 'fallback', icon: 'router', label: 'Auto-Failover', x: 380, y: 200, color: '#fb923c' },
-      { id: 'misinfo', icon: 'document', label: 'Stale Output', x: 560, y: 320, color: '#f87171' },
+      { id: 'user', icon: 'user', label: 'User', x: 77, y: 225, color: '#60a5fa' },
+      { id: 'llm', icon: 'cloud', label: 'LLM', x: 283, y: 225, color: '#60a5fa' },
+      { id: 'primary', icon: 'vectordb', label: 'Primary DB', x: 489, y: 90, color: '#2dd4bf' },
+      { id: 'replica', icon: 'vectordb', label: 'Stale Replica', x: 489, y: 360, color: '#f87171' },
+      { id: 'fail', icon: 'firewall', label: 'Overloaded', x: 720, y: 90, color: '#f87171' },
+      { id: 'deleted', icon: 'document', label: 'DSR Deleted', x: 283, y: 90, color: '#f87171' },
+      { id: 'fallback', icon: 'router', label: 'Auto-Failover', x: 489, y: 225, color: '#fb923c' },
+      { id: 'misinfo', icon: 'document', label: 'Stale Output', x: 720, y: 360, color: '#f87171' },
     ],
     edges: [
       { from: 'user', to: 'llm', color: '#60a5fa', animated: true, label: 'Query' },
@@ -574,19 +574,19 @@ const diagramConfigs = {
       { from: 'fallback', to: 'replica', color: '#f87171', animated: true, label: 'Silent switch', labelPos: 0.7 },
       { from: 'replica', to: 'misinfo', color: '#f87171', animated: true, label: 'DSR data lives' },
     ],
-    dangerZone: { x: 300, y: 250, width: 160, height: 130, label: 'Stale + DSR Violation' },
+    dangerZone: { x: 386, y: 281, width: 206, height: 146, label: 'Stale + DSR Violation' },
   },
 
   DSGAI18: {
     nodes: [
-      { id: 'attacker', icon: 'user', label: 'Attacker', x: 60, y: 200, color: '#f87171' },
-      { id: 'probes', icon: 'document', label: '10K+ Probes', x: 200, y: 80, color: '#f87171' },
-      { id: 'llm', icon: 'cloud', label: 'Target Model', x: 350, y: 200, color: '#60a5fa' },
-      { id: 'vdb', icon: 'vectordb', label: 'Vector Store', x: 200, y: 320, color: '#2dd4bf' },
-      { id: 'confidence', icon: 'document', label: 'Confidence Scores', x: 500, y: 80, color: '#fbbf24' },
-      { id: 'knn', icon: 'document', label: 'k-NN Results', x: 500, y: 320, color: '#fbbf24' },
-      { id: 'analysis', icon: 'server', label: 'Statistical ML', x: 580, y: 200, color: '#a78bfa' },
-      { id: 'result', icon: 'document', label: 'Member: Yes 93%', x: 640, y: 80, color: '#f87171' },
+      { id: 'attacker', icon: 'user', label: 'Attacker', x: 77, y: 225, color: '#f87171' },
+      { id: 'probes', icon: 'document', label: '10K+ Probes', x: 257, y: 90, color: '#f87171' },
+      { id: 'llm', icon: 'cloud', label: 'Target Model', x: 450, y: 225, color: '#60a5fa' },
+      { id: 'vdb', icon: 'vectordb', label: 'Vector Store', x: 257, y: 360, color: '#2dd4bf' },
+      { id: 'confidence', icon: 'document', label: 'Confidence Scores', x: 643, y: 90, color: '#fbbf24' },
+      { id: 'knn', icon: 'document', label: 'k-NN Results', x: 643, y: 360, color: '#fbbf24' },
+      { id: 'analysis', icon: 'server', label: 'Statistical ML', x: 746, y: 225, color: '#a78bfa' },
+      { id: 'result', icon: 'document', label: 'Member: Yes 93%', x: 823, y: 90, color: '#f87171' },
     ],
     edges: [
       { from: 'attacker', to: 'probes', color: '#f87171', animated: true, label: 'Craft queries', labelPos: 0.3 },
@@ -598,19 +598,19 @@ const diagramConfigs = {
       { from: 'knn', to: 'analysis', color: '#a78bfa', animated: true, label: 'Inversion', labelPos: 0.7 },
       { from: 'analysis', to: 'result', color: '#f87171', animated: true, label: 'Confirmed' },
     ],
-    dangerZone: { x: 420, y: 130, width: 180, height: 140, label: 'Signal Accumulation' },
+    dangerZone: { x: 540, y: 146, width: 231, height: 158, label: 'Signal Accumulation' },
   },
 
   DSGAI19: {
     nodes: [
-      { id: 'db', icon: 'database', label: 'Patient Records', x: 60, y: 200, color: '#2dd4bf' },
-      { id: 'export', icon: 'server', label: 'Export Job', x: 220, y: 200, color: '#a78bfa' },
-      { id: 'platform', icon: 'cloud', label: 'Crowd Platform', x: 400, y: 200, color: '#60a5fa' },
-      { id: 'labelerA', icon: 'user', label: 'Labeler (Clean)', x: 560, y: 80, color: '#60a5fa' },
-      { id: 'labelerB', icon: 'user', label: 'Labeler (Comp.)', x: 560, y: 320, color: '#f87171' },
-      { id: 'fullpii', icon: 'document', label: 'Full PHI', x: 220, y: 80, color: '#f87171' },
-      { id: 'malware', icon: 'document', label: 'Malware', x: 640, y: 320, color: '#f87171' },
-      { id: 'creep', icon: 'document', label: 'Field Creep', x: 400, y: 80, color: '#f87171' },
+      { id: 'db', icon: 'database', label: 'Patient Records', x: 77, y: 225, color: '#2dd4bf' },
+      { id: 'export', icon: 'server', label: 'Export Job', x: 283, y: 225, color: '#a78bfa' },
+      { id: 'platform', icon: 'cloud', label: 'Crowd Platform', x: 514, y: 225, color: '#60a5fa' },
+      { id: 'labelerA', icon: 'user', label: 'Labeler (Clean)', x: 720, y: 90, color: '#60a5fa' },
+      { id: 'labelerB', icon: 'user', label: 'Labeler (Comp.)', x: 720, y: 360, color: '#f87171' },
+      { id: 'fullpii', icon: 'document', label: 'Full PHI', x: 283, y: 90, color: '#f87171' },
+      { id: 'malware', icon: 'document', label: 'Malware', x: 823, y: 360, color: '#f87171' },
+      { id: 'creep', icon: 'document', label: 'Field Creep', x: 514, y: 90, color: '#f87171' },
     ],
     edges: [
       { from: 'db', to: 'export', color: '#2dd4bf', animated: true, label: 'Full records' },
@@ -621,19 +621,19 @@ const diagramConfigs = {
       { from: 'platform', to: 'labelerB', color: '#f87171', animated: true, label: 'Views PII', labelPos: 0.7 },
       { from: 'labelerB', to: 'malware', color: '#f87171', animated: true, label: 'Exfiltrate' },
     ],
-    dangerZone: { x: 480, y: 250, width: 180, height: 130, label: 'Compromised Endpoint' },
+    dangerZone: { x: 617, y: 281, width: 231, height: 146, label: 'Compromised Endpoint' },
   },
 
   DSGAI20: {
     nodes: [
-      { id: 'attacker', icon: 'user', label: 'Attacker', x: 60, y: 200, color: '#f87171' },
-      { id: 'accounts', icon: 'lock', label: 'Multi-Account', x: 60, y: 80, color: '#f87171' },
-      { id: 'api', icon: 'router', label: 'Model API', x: 240, y: 200, color: '#fb923c' },
-      { id: 'model', icon: 'cloud', label: 'Proprietary LLM', x: 400, y: 200, color: '#60a5fa' },
-      { id: 'cot', icon: 'document', label: 'CoT Coercion', x: 400, y: 80, color: '#f87171' },
-      { id: 'pairs', icon: 'document', label: '100K+ I/O Pairs', x: 560, y: 120, color: '#fbbf24' },
-      { id: 'student', icon: 'cloud', label: 'Student Model', x: 560, y: 280, color: '#f87171' },
-      { id: 'clone', icon: 'server', label: 'Competitor', x: 640, y: 200, color: '#f87171' },
+      { id: 'attacker', icon: 'user', label: 'Attacker', x: 77, y: 225, color: '#f87171' },
+      { id: 'accounts', icon: 'lock', label: 'Multi-Account', x: 77, y: 90, color: '#f87171' },
+      { id: 'api', icon: 'router', label: 'Model API', x: 309, y: 225, color: '#fb923c' },
+      { id: 'model', icon: 'cloud', label: 'Proprietary LLM', x: 514, y: 225, color: '#60a5fa' },
+      { id: 'cot', icon: 'document', label: 'CoT Coercion', x: 514, y: 90, color: '#f87171' },
+      { id: 'pairs', icon: 'document', label: '100K+ I/O Pairs', x: 720, y: 135, color: '#fbbf24' },
+      { id: 'student', icon: 'cloud', label: 'Student Model', x: 720, y: 315, color: '#f87171' },
+      { id: 'clone', icon: 'server', label: 'Competitor', x: 823, y: 225, color: '#f87171' },
     ],
     edges: [
       { from: 'attacker', to: 'api', color: '#f87171', animated: true, label: 'Legit API', labelPos: 0.3 },
@@ -644,19 +644,19 @@ const diagramConfigs = {
       { from: 'pairs', to: 'student', color: '#f87171', animated: true, label: 'Distill' },
       { from: 'student', to: 'clone', color: '#f87171', animated: true, label: 'Deploy copy' },
     ],
-    dangerZone: { x: 480, y: 60, width: 170, height: 120, label: 'IP Theft' },
+    dangerZone: { x: 617, y: 68, width: 219, height: 135, label: 'IP Theft' },
   },
 
   DSGAI21: {
     nodes: [
-      { id: 'attacker', icon: 'user', label: 'Attacker', x: 60, y: 80, color: '#f87171' },
-      { id: 'wiki', icon: 'document', label: 'Internal Wiki', x: 220, y: 80, color: '#fbbf24' },
-      { id: 'corpus', icon: 'database', label: 'Open Corpus', x: 220, y: 280, color: '#2dd4bf' },
-      { id: 'trusted', icon: 'database', label: 'Trusted Source', x: 400, y: 200, color: '#2dd4bf' },
-      { id: 'rag', icon: 'cloud', label: 'RAG System', x: 540, y: 200, color: '#60a5fa' },
-      { id: 'grounded', icon: 'document', label: '"Grounded" Lie', x: 540, y: 80, color: '#f87171' },
-      { id: 'victim', icon: 'user', label: 'Decision Maker', x: 640, y: 200, color: '#60a5fa' },
-      { id: 'crisis', icon: 'document', label: 'Crisis Timing', x: 60, y: 200, color: '#f87171' },
+      { id: 'attacker', icon: 'user', label: 'Attacker', x: 77, y: 90, color: '#f87171' },
+      { id: 'wiki', icon: 'document', label: 'Internal Wiki', x: 283, y: 90, color: '#fbbf24' },
+      { id: 'corpus', icon: 'database', label: 'Open Corpus', x: 283, y: 315, color: '#2dd4bf' },
+      { id: 'trusted', icon: 'database', label: 'Trusted Source', x: 514, y: 225, color: '#2dd4bf' },
+      { id: 'rag', icon: 'cloud', label: 'RAG System', x: 694, y: 225, color: '#60a5fa' },
+      { id: 'grounded', icon: 'document', label: '"Grounded" Lie', x: 694, y: 90, color: '#f87171' },
+      { id: 'victim', icon: 'user', label: 'Decision Maker', x: 823, y: 225, color: '#60a5fa' },
+      { id: 'crisis', icon: 'document', label: 'Crisis Timing', x: 77, y: 225, color: '#f87171' },
     ],
     edges: [
       { from: 'attacker', to: 'wiki', color: '#f87171', animated: true, label: 'Write access', labelPos: 0.3 },
@@ -668,7 +668,7 @@ const diagramConfigs = {
       { from: 'rag', to: 'grounded', color: '#f87171', animated: true, label: 'Cited', labelPos: 0.3 },
       { from: 'rag', to: 'victim', color: '#f87171', animated: true, label: 'Misled', labelPos: 0.7 },
     ],
-    dangerZone: { x: 140, y: 30, width: 340, height: 120, label: 'Poisoned Sources' },
+    dangerZone: { x: 180, y: 34, width: 437, height: 135, label: 'Poisoned Sources' },
   },
 }
 
@@ -759,17 +759,17 @@ function FlowEdge({ fromNode, toNode, color, animated, label, idx, diagramId, la
       {label && (
         <g>
           <rect
-            x={mx - label.length * 3.2}
-            y={my - 9}
-            width={label.length * 6.4}
-            height={13}
+            x={mx - label.length * 3.8}
+            y={my - 10}
+            width={label.length * 7.6}
+            height={15}
             rx="3"
             className="node-bg"
           />
           <text
             x={mx}
-            y={my + 1}
-            fontSize="10"
+            y={my + 2}
+            fontSize="12"
             fontFamily="monospace"
             fontWeight="600"
             textAnchor="middle"
@@ -822,17 +822,17 @@ function NetworkDiagram({ risk }) {
       </div>
 
       {/* SVG Diagram */}
-      <div className="p-3">
-        <svg viewBox="0 0 700 400" width="100%" className="block">
+      <div className="p-4">
+        <svg viewBox="0 0 900 450" width="100%" className="block">
           {/* Background */}
-          <rect x="0" y="0" width="700" height="400" rx="8" className="diagram-bg" />
+          <rect x="0" y="0" width="900" height="450" rx="8" className="diagram-bg" />
 
           {/* Grid lines for topology feel */}
-          {[80, 160, 240, 320].map(y => (
-            <line key={`h-${y}`} x1="0" y1={y} x2="700" y2={y} strokeWidth="1" className="diagram-grid" />
+          {[90, 180, 270, 360].map(y => (
+            <line key={`h-${y}`} x1="0" y1={y} x2="900" y2={y} strokeWidth="1" className="diagram-grid" />
           ))}
-          {[140, 280, 420, 560].map(x => (
-            <line key={`v-${x}`} x1={x} y1="0" x2={x} y2="400" strokeWidth="1" className="diagram-grid" />
+          {[180, 360, 540, 720].map(x => (
+            <line key={`v-${x}`} x1={x} y1="0" x2={x} y2="450" strokeWidth="1" className="diagram-grid" />
           ))}
 
           {/* Danger zone */}
@@ -851,12 +851,12 @@ function NetworkDiagram({ risk }) {
               />
               <text
                 x={config.dangerZone.x + config.dangerZone.width / 2}
-                y={config.dangerZone.y + 16}
-                fontSize="11"
+                y={config.dangerZone.y + 18}
+                fontSize="13"
                 fontFamily="monospace"
                 fontWeight="bold"
                 textAnchor="middle"
-                opacity="0.85"
+                opacity="0.9"
                 className="danger-zone-text"
               >
                 {config.dangerZone.label}
@@ -888,22 +888,22 @@ function NetworkDiagram({ risk }) {
           {config.nodes.map(node => (
             <g key={node.id}>
               {/* Node background circle */}
-              <circle cx={node.x} cy={node.y} r="24" className="node-bg" />
+              <circle cx={node.x} cy={node.y} r="26" className="node-bg" />
               {/* Icon */}
               <RenderIcon icon={node.icon} x={node.x} y={node.y} color={node.color} />
               {/* Label with background pill */}
               <rect
-                x={node.x - node.label.length * 3.5}
-                y={node.y + 24}
-                width={node.label.length * 7}
-                height={15}
+                x={node.x - node.label.length * 4}
+                y={node.y + 27}
+                width={node.label.length * 8}
+                height={17}
                 rx="4"
                 className="node-bg"
               />
               <text
                 x={node.x}
-                y={node.y + 35}
-                fontSize="11"
+                y={node.y + 40}
+                fontSize="13"
                 fontFamily="monospace"
                 fontWeight="600"
                 textAnchor="middle"
@@ -1047,6 +1047,26 @@ export default function Diagrams() {
       {/* Legend */}
       <DiagramLegend />
 
+      {/* Jump-to navigation */}
+      <div className="bg-owasp-card rounded-xl border border-owasp-border p-4">
+        <p className="text-xs font-semibold text-owasp-text mb-3">Jump to Diagram</p>
+        <div className="flex flex-wrap gap-2">
+          {filtered.map(risk => {
+            const rCat = getCategoryMeta(risk.category)
+            return (
+              <a
+                key={risk.id}
+                href={`#diagram-${risk.id}`}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium border border-owasp-border hover:border-owasp-hover bg-owasp-dark transition-colors"
+                style={{ color: rCat.color }}
+              >
+                {risk.id}
+              </a>
+            )
+          })}
+        </div>
+      </div>
+
       {/* Category Filter */}
       <div className="flex flex-wrap gap-2">
         <button
@@ -1079,10 +1099,12 @@ export default function Diagrams() {
         ))}
       </div>
 
-      {/* Diagram Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      {/* Diagrams — single column, full width */}
+      <div className="flex flex-col gap-8">
         {filtered.map(risk => (
-          <NetworkDiagram key={risk.id} risk={risk} />
+          <div key={risk.id} id={`diagram-${risk.id}`} className="scroll-mt-20">
+            <NetworkDiagram risk={risk} />
+          </div>
         ))}
       </div>
 
