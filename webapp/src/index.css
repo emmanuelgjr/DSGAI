@@ -100,31 +100,19 @@ html { scroll-behavior: smooth; }
 .card-stagger:nth-child(21) { animation-delay: 1.05s; }
 
 /* ── Network Diagram Animations ── */
-@keyframes flowPulse {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 1; }
-}
-
 @keyframes dataFlow {
   0% { stroke-dashoffset: 20; }
   100% { stroke-dashoffset: 0; }
 }
 
-@keyframes packetMove {
-  0% { offset-distance: 0%; opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { offset-distance: 100%; opacity: 0; }
+@keyframes dataFlowReverse {
+  0% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: 20; }
 }
 
-@keyframes nodeGlow {
-  0%, 100% { filter: drop-shadow(0 0 2px currentColor); }
-  50% { filter: drop-shadow(0 0 8px currentColor); }
-}
-
-@keyframes alertPulse {
-  0%, 100% { transform: scale(1); opacity: 0.8; }
-  50% { transform: scale(1.15); opacity: 1; }
+@keyframes dangerPulse {
+  0%, 100% { stroke-opacity: 0.3; }
+  50% { stroke-opacity: 0.7; }
 }
 
 .flow-line {
@@ -132,19 +120,32 @@ html { scroll-behavior: smooth; }
   animation: dataFlow 0.8s linear infinite;
 }
 
-.flow-line-reverse {
-  stroke-dasharray: 6 4;
-  animation: dataFlow 0.8s linear infinite reverse;
+.flow-line-attack {
+  stroke-dasharray: 8 3;
+  animation: dataFlow 0.6s linear infinite, dangerPulse 2s ease-in-out infinite;
 }
 
-.node-glow {
-  animation: nodeGlow 2s ease-in-out infinite;
-}
+/* Theme-aware diagram backgrounds */
+.dark .diagram-bg { fill: rgba(15,23,42,0.5); }
+:root:not(.dark) .diagram-bg { fill: rgba(241,245,249,0.8); }
 
-.alert-pulse {
-  animation: alertPulse 1.5s ease-in-out infinite;
-}
+.dark .diagram-grid { stroke: rgba(148,163,184,0.07); }
+:root:not(.dark) .diagram-grid { stroke: rgba(100,116,139,0.1); }
 
-.packet {
-  animation: packetMove 2s ease-in-out infinite;
-}
+.dark .diagram-label { fill: rgba(226,232,240,0.9); }
+:root:not(.dark) .diagram-label { fill: rgba(30,41,59,0.9); }
+
+.dark .diagram-sublabel { fill: rgba(148,163,184,0.7); }
+:root:not(.dark) .diagram-sublabel { fill: rgba(100,116,139,0.8); }
+
+.dark .danger-zone-fill { fill: rgba(248,113,113,0.06); }
+:root:not(.dark) .danger-zone-fill { fill: rgba(254,202,202,0.3); }
+
+.dark .danger-zone-stroke { stroke: #f87171; }
+:root:not(.dark) .danger-zone-stroke { stroke: #dc2626; }
+
+.dark .danger-zone-text { fill: #f87171; }
+:root:not(.dark) .danger-zone-text { fill: #dc2626; }
+
+.dark .node-bg { fill: rgba(255,255,255,0.04); stroke: rgba(255,255,255,0.08); }
+:root:not(.dark) .node-bg { fill: rgba(255,255,255,0.7); stroke: rgba(0,0,0,0.08); }

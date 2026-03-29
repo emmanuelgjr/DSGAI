@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { Network } from 'lucide-react'
+import { Network, ExternalLink } from 'lucide-react'
 import { risks, categories } from '../data/risks'
+import { useTheme } from '../components/ThemeContext'
 
 // ---------------------------------------------------------------------------
 // SVG Infrastructure Icons as React components
@@ -133,7 +134,7 @@ function DocumentIcon({ x, y, size = 36, color = '#fbbf24' }) {
 }
 
 // ---------------------------------------------------------------------------
-// Icon renderer
+// Icon renderer (with background circle)
 // ---------------------------------------------------------------------------
 
 const iconComponents = {
@@ -153,7 +154,12 @@ const iconComponents = {
 function RenderIcon({ icon, x, y, color }) {
   const Comp = iconComponents[icon]
   if (!Comp) return null
-  return <Comp x={x} y={y} color={color} />
+  return (
+    <g>
+      <circle cx={x} cy={y} r={22} className="node-bg" />
+      <Comp x={x} y={y} color={color} />
+    </g>
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -575,30 +581,56 @@ function getCategoryMeta(categoryId) {
 }
 
 // ---------------------------------------------------------------------------
-// Flow line with animated packet
+// Flow line with animated packet and arrowhead
 // ---------------------------------------------------------------------------
 
-function FlowEdge({ fromNode, toNode, color, animated, label, idx }) {
+function FlowEdge({ fromNode, toNode, color, animated, label, idx, diagramId }) {
   const x1 = fromNode.x
   const y1 = fromNode.y
   const x2 = toNode.x
   const y2 = toNode.y
-  const mx = (x1 + x2) / 2
-  const my = (y1 + y2) / 2
 
-  const pathId = `path-${fromNode.id}-${toNode.id}-${idx}`
-  const dur = [1.5, 2, 2.5, 3][idx % 4]
   const isAttack = color === '#f87171'
+  const dur = [2, 2.5, 3, 3.5][idx % 4]
+  const markerId = `arrow-${diagramId}-${idx}`
+  const pathId = `motion-${diagramId}-${fromNode.id}-${toNode.id}-${idx}`
+
+  // Offset label perpendicular to line to avoid overlap
+  const dx = x2 - x1
+  const dy = y2 - y1
+  const len = Math.sqrt(dx * dx + dy * dy) || 1
+  const nx = -dy / len
+  const ny = dx / len
+  const mx = (x1 + x2) / 2 + nx * 10
+  const my = (y1 + y2) / 2 + ny * 10
 
   return (
     <g>
+      {/* Per-edge arrow marker */}
+      <defs>
+        <marker
+          id={markerId}
+          viewBox="0 0 10 10"
+          refX="10"
+          refY="5"
+          markerWidth="6"
+          markerHeight="6"
+          orient="auto-start-reverse"
+        >
+          <path d="M 0 0 L 10 5 L 0 10 z" fill={color} />
+        </marker>
+      </defs>
+
+      {/* Flow line */}
       <line
         x1={x1} y1={y1} x2={x2} y2={y2}
         stroke={color}
         strokeWidth={isAttack ? 2 : 1.5}
-        strokeOpacity={isAttack ? 0.8 : 0.4}
-        className={isAttack ? 'flow-line alert-pulse' : 'flow-line'}
+        strokeOpacity={isAttack ? 0.8 : 0.5}
+        className={isAttack ? 'flow-line-attack' : 'flow-line'}
+        markerEnd={`url(#${markerId})`}
       />
+
       {/* Invisible path for animateMotion */}
       <path
         id={pathId}
@@ -606,24 +638,29 @@ function FlowEdge({ fromNode, toNode, color, animated, label, idx }) {
         fill="none"
         stroke="none"
       />
+
       {/* Animated data packet */}
       {animated && (
-        <circle r="3" fill={color} opacity="0.9">
+        <circle
+          r={isAttack ? 4 : 3}
+          fill={color}
+          opacity="0.9"
+        >
           <animateMotion dur={`${dur}s`} repeatCount="indefinite">
             <mpath href={`#${pathId}`} />
           </animateMotion>
         </circle>
       )}
+
       {/* Edge label */}
       {label && (
         <text
           x={mx}
-          y={my - 8}
-          fill={color}
+          y={my}
           fontSize="9"
           fontFamily="monospace"
           textAnchor="middle"
-          opacity="0.8"
+          className="diagram-sublabel"
         >
           {label}
         </text>
@@ -645,42 +682,43 @@ function NetworkDiagram({ risk }) {
   const nodeMap = {}
   config.nodes.forEach(n => { nodeMap[n.id] = n })
 
+  const cveCount = risk.cves ? risk.cves.filter(c => c).length : 0
+
   return (
     <div
       className="card-stagger bg-owasp-card rounded-xl border border-owasp-border overflow-hidden hover:border-owasp-hover transition-colors"
       style={{ borderLeftWidth: '3px', borderLeftColor: cat.color }}
     >
       {/* Header */}
-      <div className="px-4 py-3 border-b border-owasp-border flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0">
+      <div className="px-4 py-3 border-b border-owasp-border">
+        <div className="flex items-start gap-3 min-w-0">
           <span
-            className="shrink-0 text-xs font-mono font-bold px-2 py-0.5 rounded"
+            className="shrink-0 text-xs font-mono font-bold px-2 py-0.5 rounded mt-0.5"
             style={{ backgroundColor: cat.bgColor, color: cat.color, border: `1px solid ${cat.borderColor}` }}
           >
             {risk.id}
           </span>
-          <h3 className="text-sm font-semibold text-owasp-text truncate">{risk.title}</h3>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-sm font-semibold text-owasp-text truncate">{risk.title}</h3>
+            {risk.tagline && (
+              <p className="text-xs text-owasp-muted mt-0.5 line-clamp-2">{risk.tagline}</p>
+            )}
+          </div>
         </div>
-        <Link
-          to={`/risks/${risk.id}`}
-          className="shrink-0 text-xs font-medium px-3 py-1 rounded-md border border-owasp-border text-owasp-muted hover:text-owasp-text hover:border-owasp-hover transition-colors"
-        >
-          View Details
-        </Link>
       </div>
 
       {/* SVG Diagram */}
       <div className="p-3">
-        <svg viewBox="0 0 700 400" width="100%" height="auto" className="block">
+        <svg viewBox="0 0 700 400" width="100%" className="block">
           {/* Background */}
-          <rect x="0" y="0" width="700" height="400" rx="8" fill="rgba(15,23,42,0.3)" />
+          <rect x="0" y="0" width="700" height="400" rx="8" className="diagram-bg" />
 
           {/* Grid lines for topology feel */}
           {[80, 160, 240, 320].map(y => (
-            <line key={`h-${y}`} x1="0" y1={y} x2="700" y2={y} stroke="rgba(148,163,184,0.06)" strokeWidth="1" />
+            <line key={`h-${y}`} x1="0" y1={y} x2="700" y2={y} strokeWidth="1" className="diagram-grid" />
           ))}
           {[140, 280, 420, 560].map(x => (
-            <line key={`v-${x}`} x1={x} y1="0" x2={x} y2="400" stroke="rgba(148,163,184,0.06)" strokeWidth="1" />
+            <line key={`v-${x}`} x1={x} y1="0" x2={x} y2="400" strokeWidth="1" className="diagram-grid" />
           ))}
 
           {/* Danger zone */}
@@ -692,8 +730,7 @@ function NetworkDiagram({ risk }) {
                 width={config.dangerZone.width}
                 height={config.dangerZone.height}
                 rx="6"
-                fill="rgba(248,113,113,0.05)"
-                stroke="#f87171"
+                className="danger-zone-fill danger-zone-stroke"
                 strokeWidth="1.5"
                 strokeDasharray="6 3"
                 opacity="0.6"
@@ -701,12 +738,12 @@ function NetworkDiagram({ risk }) {
               <text
                 x={config.dangerZone.x + config.dangerZone.width / 2}
                 y={config.dangerZone.y + 14}
-                fill="#f87171"
                 fontSize="10"
                 fontFamily="monospace"
                 fontWeight="bold"
                 textAnchor="middle"
                 opacity="0.7"
+                className="danger-zone-text"
               >
                 {config.dangerZone.label}
               </text>
@@ -727,6 +764,7 @@ function NetworkDiagram({ risk }) {
                 animated={edge.animated}
                 label={edge.label}
                 idx={i}
+                diagramId={risk.id}
               />
             )
           })}
@@ -734,31 +772,110 @@ function NetworkDiagram({ risk }) {
           {/* Nodes */}
           {config.nodes.map(node => (
             <g key={node.id}>
-              {/* Glow effect */}
-              <circle
-                cx={node.x}
-                cy={node.y}
-                r="24"
-                fill={node.color}
-                opacity="0.08"
-                className="node-glow"
-              />
-              {/* Icon */}
+              {/* Icon with background circle */}
               <RenderIcon icon={node.icon} x={node.x} y={node.y} color={node.color} />
               {/* Label */}
               <text
                 x={node.x}
                 y={node.y + 32}
-                fill="rgba(226,232,240,0.85)"
                 fontSize="10"
                 fontFamily="monospace"
                 textAnchor="middle"
+                className="diagram-label"
               >
                 {node.label}
               </text>
             </g>
           ))}
         </svg>
+      </div>
+
+      {/* Footer */}
+      <div className="px-4 py-2.5 border-t border-owasp-border flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <span
+            className="text-[10px] font-medium px-2 py-0.5 rounded"
+            style={{ backgroundColor: cat.bgColor, color: cat.color, border: `1px solid ${cat.borderColor}` }}
+          >
+            {cat.label}
+          </span>
+          {cveCount > 0 && (
+            <span className="text-[10px] font-mono text-owasp-muted bg-owasp-bg px-1.5 py-0.5 rounded border border-owasp-border">
+              {cveCount} CVE{cveCount !== 1 ? 's' : ''}
+            </span>
+          )}
+        </div>
+        <Link
+          to={`/risks/${risk.id}`}
+          className="shrink-0 flex items-center gap-1 text-xs font-medium px-3 py-1 rounded-md border border-owasp-border text-owasp-muted hover:text-owasp-text hover:border-owasp-hover transition-colors"
+        >
+          View Details
+          <ExternalLink className="w-3 h-3" />
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Legend Component
+// ---------------------------------------------------------------------------
+
+function DiagramLegend() {
+  return (
+    <div className="bg-owasp-card rounded-lg border border-owasp-border px-4 py-3">
+      <p className="text-xs font-semibold text-owasp-text mb-2">Legend</p>
+      <div className="flex flex-wrap gap-x-6 gap-y-2">
+        {/* Flow types */}
+        <div className="flex items-center gap-2">
+          <svg width="32" height="10" viewBox="0 0 32 10">
+            <line x1="0" y1="5" x2="32" y2="5" stroke="#60a5fa" strokeWidth="1.5" strokeDasharray="6 4" />
+          </svg>
+          <span className="text-[11px] text-owasp-muted">Normal flow</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <svg width="32" height="10" viewBox="0 0 32 10">
+            <line x1="0" y1="5" x2="32" y2="5" stroke="#f87171" strokeWidth="2" strokeDasharray="8 3" />
+          </svg>
+          <span className="text-[11px] text-owasp-muted">Attack path</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <svg width="24" height="16" viewBox="0 0 24 16">
+            <rect x="1" y="1" width="22" height="14" rx="3" fill="none" stroke="#f87171" strokeWidth="1.5" strokeDasharray="4 2" opacity="0.6" />
+          </svg>
+          <span className="text-[11px] text-owasp-muted">Danger zone</span>
+        </div>
+
+        {/* Icon types */}
+        <div className="flex items-center gap-2">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <circle cx="8" cy="5" r="3" fill="none" stroke="#60a5fa" strokeWidth="1" />
+            <path d="M3 14 C3 10 6 8 8 8 C10 8 13 10 13 14" fill="none" stroke="#60a5fa" strokeWidth="1" />
+          </svg>
+          <span className="text-[11px] text-owasp-muted">User / Actor</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <rect x="1" y="2" width="14" height="5" rx="2" fill="none" stroke="#a78bfa" strokeWidth="1" />
+            <rect x="1" y="9" width="14" height="5" rx="2" fill="none" stroke="#a78bfa" strokeWidth="1" />
+          </svg>
+          <span className="text-[11px] text-owasp-muted">Server</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <ellipse cx="8" cy="4" rx="6" ry="3" fill="none" stroke="#2dd4bf" strokeWidth="1" />
+            <line x1="2" y1="4" x2="2" y2="12" stroke="#2dd4bf" strokeWidth="1" />
+            <line x1="14" y1="4" x2="14" y2="12" stroke="#2dd4bf" strokeWidth="1" />
+            <ellipse cx="8" cy="12" rx="6" ry="3" fill="none" stroke="#2dd4bf" strokeWidth="1" />
+          </svg>
+          <span className="text-[11px] text-owasp-muted">Database</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <path d="M3 10 C1 10 0 9 0 7.5 C0 5.5 2 4 4 4 C4.5 2 6 1 8 1 C10.5 1 12 2.5 12.5 4 C14 4.5 15 5.5 15 7 C15 8.5 13.5 10 12 10 Z" fill="none" stroke="#60a5fa" strokeWidth="1" />
+          </svg>
+          <span className="text-[11px] text-owasp-muted">Cloud / LLM</span>
+        </div>
       </div>
     </div>
   )
@@ -770,6 +887,7 @@ function NetworkDiagram({ risk }) {
 
 export default function Diagrams() {
   const [searchParams, setSearchParams] = useSearchParams()
+  const { dark } = useTheme()
 
   const activeCat = searchParams.get('cat') || 'all'
 
@@ -796,9 +914,12 @@ export default function Diagrams() {
           <h1 className="text-2xl font-bold text-owasp-text">Network Diagrams</h1>
         </div>
         <p className="text-owasp-muted text-sm max-w-2xl">
-          Visual network topology diagrams showing infrastructure attack flows for each of the 21 OWASP GenAI data security risks. Animated lines indicate data flow direction and red highlights mark attack paths.
+          Visual network topology diagrams showing infrastructure attack flows for each of the 21 OWASP GenAI data security risks. Animated packets indicate data flow direction; red highlights mark attack paths and danger zones.
         </p>
       </div>
+
+      {/* Legend */}
+      <DiagramLegend />
 
       {/* Category Filter */}
       <div className="flex flex-wrap gap-2">
