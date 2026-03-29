@@ -13,12 +13,13 @@ import {
   ChevronUp,
 } from 'lucide-react'
 import { risks, categories, tierLabels } from '../data/risks'
+import { useTheme } from '../components/ThemeContext'
 
 // ---------------------------------------------------------------------------
-// Color maps
+// Color maps — dark and light variants
 // ---------------------------------------------------------------------------
 
-const chipColorMap = {
+const chipColorMapDark = {
   pii: { bg: '#7f1d1d', text: '#fca5a5' },
   reg: { bg: '#713f12', text: '#fde68a' },
   poison: { bg: '#7c2d12', text: '#fdba74' },
@@ -29,8 +30,19 @@ const chipColorMap = {
   legal: { bg: '#831843', text: '#f9a8d4' },
   sec: { bg: '#1e3a5f', text: '#93c5fd' },
 }
+const chipColorMapLight = {
+  pii: { bg: '#fef2f2', text: '#b91c1c' },
+  reg: { bg: '#fefce8', text: '#a16207' },
+  poison: { bg: '#fff7ed', text: '#c2410c' },
+  dsr: { bg: '#f5f3ff', text: '#6d28d9' },
+  ops: { bg: '#ecfdf5', text: '#047857' },
+  trust: { bg: '#f5f3ff', text: '#7c3aed' },
+  fin: { bg: '#fffbeb', text: '#b45309' },
+  legal: { bg: '#fdf2f8', text: '#be185d' },
+  sec: { bg: '#eff6ff', text: '#1d4ed8' },
+}
 
-const nodeColors = {
+const nodeColorsDark = {
   attacker: { bg: '#2a1520', border: '#dc2626', text: '#fca5a5' },
   action:   { bg: '#1a1a0d', border: '#d97706', text: '#fcd34d' },
   system:   { bg: '#0f172a', border: '#2563eb', text: '#93c5fd' },
@@ -38,32 +50,58 @@ const nodeColors = {
   impact:   { bg: '#0f1a14', border: '#16a34a', text: '#86efac' },
   gray:     { bg: '#1e2030', border: '#6b7a99', text: '#8896b0' },
 }
+const nodeColorsLight = {
+  attacker: { bg: '#fef2f2', border: '#dc2626', text: '#991b1b' },
+  action:   { bg: '#fffbeb', border: '#d97706', text: '#92400e' },
+  system:   { bg: '#eff6ff', border: '#2563eb', text: '#1e40af' },
+  leak:     { bg: '#fef2f2', border: '#dc2626', text: '#991b1b' },
+  impact:   { bg: '#f0fdf4', border: '#16a34a', text: '#166534' },
+  gray:     { bg: '#f3f4f6', border: '#9ca3af', text: '#4b5563' },
+}
 
-const tierColors = {
+const tierColorsDark = {
   tier1: { accent: '#16a34a', bg: '#0f1a14', border: '#166534', text: '#86efac' },
   tier2: { accent: '#d97706', bg: '#1a1a0d', border: '#92400e', text: '#fcd34d' },
   tier3: { accent: '#9333ea', bg: '#1a1530', border: '#6b21a8', text: '#d8b4fe' },
 }
+const tierColorsLight = {
+  tier1: { accent: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0', text: '#166534' },
+  tier2: { accent: '#d97706', bg: '#fffbeb', border: '#fde68a', text: '#92400e' },
+  tier3: { accent: '#9333ea', bg: '#faf5ff', border: '#e9d5ff', text: '#6b21a8' },
+}
 
-const scopeColors = {
+const scopeColorsDark = {
   Buy:   { bg: '#1e3a5f', text: '#93c5fd' },
   Build: { bg: '#064e3b', text: '#6ee7b7' },
   Both:  { bg: '#312e81', text: '#c4b5fd' },
 }
-
-function getScopeStyle(scope) {
-  if (scope.includes('Buy') && scope.includes('Build')) return scopeColors.Both
-  if (scope.includes('Buy')) return scopeColors.Buy
-  if (scope.includes('Build')) return scopeColors.Build
-  return scopeColors.Both
+const scopeColorsLight = {
+  Buy:   { bg: '#dbeafe', text: '#1d4ed8' },
+  Build: { bg: '#d1fae5', text: '#047857' },
+  Both:  { bg: '#ede9fe', text: '#6d28d9' },
 }
 
-const riskLevelColors = {
+function getScopeStyle(scope, dark) {
+  const sc = dark ? scopeColorsDark : scopeColorsLight
+  if (scope.includes('Buy') && scope.includes('Build')) return sc.Both
+  if (scope.includes('Buy')) return sc.Buy
+  if (scope.includes('Build')) return sc.Build
+  return sc.Both
+}
+
+const riskLevelColorsDark = {
   'HIGH RISK':       { bg: '#7f1d1d', text: '#fca5a5' },
   'MEDIUM RISK':     { bg: '#713f12', text: '#fde68a' },
   'PERSISTENT RISK': { bg: '#4c1d95', text: '#ddd6fe' },
   'LOW RISK':        { bg: '#064e3b', text: '#6ee7b7' },
   'CRITICAL RISK':   { bg: '#7f1d1d', text: '#fca5a5' },
+}
+const riskLevelColorsLight = {
+  'HIGH RISK':       { bg: '#fef2f2', text: '#b91c1c' },
+  'MEDIUM RISK':     { bg: '#fffbeb', text: '#a16207' },
+  'PERSISTENT RISK': { bg: '#f5f3ff', text: '#7c3aed' },
+  'LOW RISK':        { bg: '#ecfdf5', text: '#047857' },
+  'CRITICAL RISK':   { bg: '#fef2f2', text: '#b91c1c' },
 }
 
 // ---------------------------------------------------------------------------
@@ -144,7 +182,7 @@ function AttackFlowDiagram({ steps, accentColor }) {
 // Attack Vector Column
 // ---------------------------------------------------------------------------
 
-function AttackVectorColumn({ vector }) {
+function AttackVectorColumn({ vector, nodeColors, riskLevelColors }) {
   const rlColors = riskLevelColors[vector.riskLevel] || { bg: '#1e293b', text: '#94a3b8' }
 
   return (
@@ -240,6 +278,12 @@ function PrevNextNav({ currentIndex }) {
 export default function RiskDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { dark } = useTheme()
+
+  const chipColorMap = dark ? chipColorMapDark : chipColorMapLight
+  const nodeColors = dark ? nodeColorsDark : nodeColorsLight
+  const tierColors = dark ? tierColorsDark : tierColorsLight
+  const riskLevelColors = dark ? riskLevelColorsDark : riskLevelColorsLight
 
   const riskIndex = useMemo(() => risks.findIndex(r => r.id === id), [id])
   const risk = riskIndex >= 0 ? risks[riskIndex] : null
@@ -366,7 +410,7 @@ export default function RiskDetail() {
       >
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {risk.attackVectors.map((vector, i) => (
-            <AttackVectorColumn key={i} vector={vector} />
+            <AttackVectorColumn key={i} vector={vector} nodeColors={nodeColors} riskLevelColors={riskLevelColors} />
           ))}
         </div>
       </Section>
@@ -475,7 +519,7 @@ export default function RiskDetail() {
           >
             <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
               {controls.map((ctrl, i) => {
-                const ss = getScopeStyle(ctrl.scope)
+                const ss = getScopeStyle(ctrl.scope, dark)
                 return (
                   <div
                     key={i}

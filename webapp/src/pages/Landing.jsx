@@ -2,7 +2,16 @@ import { Link } from 'react-router-dom'
 import {
   Shield, AlertTriangle, Layers, BookOpen, ArrowRight,
   Database, Eye, Lock, Cpu, Network, FileWarning, Scale,
+  Download, FileText, ExternalLink,
 } from 'lucide-react'
+
+function GithubIcon({ className }) {
+  return (
+    <svg viewBox="0 0 16 16" fill="currentColor" className={className}>
+      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+    </svg>
+  )
+}
 import { risks, categories } from '../data/risks'
 
 // Map category id → Tailwind color class (text)
@@ -305,6 +314,63 @@ export default function Landing() {
               </p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Export & Resources                                                  */}
+      {/* ------------------------------------------------------------------ */}
+      <section className="space-y-6">
+        <h2 className="text-2xl font-bold text-owasp-text">
+          Export & Resources
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <a
+            href="https://genai.owasp.org/resource/owasp-genai-data-security/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex flex-col items-center gap-3 p-5 rounded-xl bg-owasp-card border border-owasp-border hover:border-owasp-hover transition-colors text-center"
+          >
+            <Download className="w-8 h-8 text-cat-infra" />
+            <div>
+              <p className="font-semibold text-owasp-text text-sm">Full PDF Report</p>
+              <p className="text-xs text-owasp-muted mt-1">Original OWASP publication with all 21 entries</p>
+            </div>
+          </a>
+          <Link
+            to="/diagrams"
+            onClick={() => setTimeout(() => window.print(), 500)}
+            className="group flex flex-col items-center gap-3 p-5 rounded-xl bg-owasp-card border border-owasp-border hover:border-owasp-hover transition-colors text-center"
+          >
+            <FileText className="w-8 h-8 text-cat-identity" />
+            <div>
+              <p className="font-semibold text-owasp-text text-sm">Export Diagrams</p>
+              <p className="text-xs text-owasp-muted mt-1">Print network topology diagrams to PDF</p>
+            </div>
+          </Link>
+          <Link
+            to="/attack-paths"
+            onClick={() => setTimeout(() => window.print(), 500)}
+            className="group flex flex-col items-center gap-3 p-5 rounded-xl bg-owasp-card border border-owasp-border hover:border-owasp-hover transition-colors text-center"
+          >
+            <FileText className="w-8 h-8 text-cat-leakage" />
+            <div>
+              <p className="font-semibold text-owasp-text text-sm">Export Attack Paths</p>
+              <p className="text-xs text-owasp-muted mt-1">Print all attack path diagrams to PDF</p>
+            </div>
+          </Link>
+          <a
+            href="https://github.com/emmanuelgjr/DSGAI"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex flex-col items-center gap-3 p-5 rounded-xl bg-owasp-card border border-owasp-border hover:border-owasp-hover transition-colors text-center"
+          >
+            <GithubIcon className="w-8 h-8 text-cat-attack" />
+            <div>
+              <p className="font-semibold text-owasp-text text-sm">GitHub Repository</p>
+              <p className="text-xs text-owasp-muted mt-1">Source code, contributions, and issues</p>
+            </div>
+          </a>
         </div>
       </section>
 

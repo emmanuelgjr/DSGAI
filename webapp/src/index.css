@@ -149,3 +149,19 @@ html { scroll-behavior: smooth; }
 
 .dark .node-bg { fill: rgba(255,255,255,0.04); stroke: rgba(255,255,255,0.08); }
 :root:not(.dark) .node-bg { fill: rgba(255,255,255,0.7); stroke: rgba(0,0,0,0.08); }
+
+/* ── Print styles for PDF export ── */
+@media print {
+  header, footer, nav, .no-print { display: none !important; }
+  body { background: white !important; color: black !important; }
+  .card-stagger { opacity: 1 !important; animation: none !important; }
+  .flow-line, .flow-line-attack { animation: none !important; }
+  .bg-owasp-dark { background: white !important; }
+  .bg-owasp-card { background: #f8fafc !important; }
+  .border-owasp-border { border-color: #e2e8f0 !important; }
+  .text-owasp-text { color: #1a202c !important; }
+  .text-owasp-muted { color: #4a5568 !important; }
+  svg circle[r="3"], svg circle[r="4"] { display: none; }
+  main { padding: 0 !important; max-width: 100% !important; }
+  @page { margin: 0.5in; size: landscape; }
+}

@@ -5,6 +5,7 @@ import {
   AlertTriangle, ExternalLink,
 } from 'lucide-react'
 import { risks, categories } from '../data/risks'
+import { useTheme } from '../components/ThemeContext'
 
 // Category color maps
 const catColorClass = {
@@ -37,8 +38,8 @@ const catBgSoftClass = {
   attack: 'bg-cat-attack-bg',
 }
 
-// Node type styles
-const nodeStyles = {
+// Node type styles — dark + light
+const nodeStylesDark = {
   attacker: 'bg-red-900/30 border-red-500/50 text-red-400',
   action: 'bg-amber-900/30 border-amber-500/50 text-amber-400',
   system: 'bg-blue-900/30 border-blue-500/50 text-blue-400',
@@ -46,21 +47,41 @@ const nodeStyles = {
   impact: 'bg-green-900/30 border-green-500/50 text-green-400',
   gray: 'bg-gray-800 border-gray-600 text-gray-400',
 }
+const nodeStylesLight = {
+  attacker: 'bg-red-50 border-red-300 text-red-700',
+  action: 'bg-amber-50 border-amber-300 text-amber-700',
+  system: 'bg-blue-50 border-blue-300 text-blue-700',
+  leak: 'bg-red-100 border-red-400 text-red-800',
+  impact: 'bg-green-50 border-green-300 text-green-700',
+  gray: 'bg-gray-100 border-gray-300 text-gray-600',
+}
 
-// Impact chip color map
-const chipColors = {
+// Impact chip color map — dark + light
+const chipColorsDark = {
   pii: 'bg-red-900/40 text-red-300 border-red-500/30',
   reg: 'bg-amber-900/40 text-amber-300 border-amber-500/30',
   poison: 'bg-orange-900/40 text-orange-300 border-orange-500/30',
   dsr: 'bg-purple-900/40 text-purple-300 border-purple-500/30',
 }
+const chipColorsLight = {
+  pii: 'bg-red-50 text-red-700 border-red-200',
+  reg: 'bg-amber-50 text-amber-700 border-amber-200',
+  poison: 'bg-orange-50 text-orange-700 border-orange-200',
+  dsr: 'bg-purple-50 text-purple-700 border-purple-200',
+}
 
-// Risk level badge styles
-const riskLevelStyles = {
+// Risk level badge styles — dark + light
+const riskLevelStylesDark = {
   'HIGH RISK': 'bg-red-900/50 text-red-300 border-red-500/40',
   'MEDIUM RISK': 'bg-amber-900/50 text-amber-300 border-amber-500/40',
   'PERSISTENT RISK': 'bg-purple-900/50 text-purple-300 border-purple-500/40',
   'LOW RISK': 'bg-green-900/50 text-green-300 border-green-500/40',
+}
+const riskLevelStylesLight = {
+  'HIGH RISK': 'bg-red-100 text-red-700 border-red-300',
+  'MEDIUM RISK': 'bg-amber-100 text-amber-700 border-amber-300',
+  'PERSISTENT RISK': 'bg-purple-100 text-purple-700 border-purple-300',
+  'LOW RISK': 'bg-green-100 text-green-700 border-green-300',
 }
 
 function AttackFlowNode({ node, isLast }) {
@@ -79,7 +100,7 @@ function AttackFlowNode({ node, isLast }) {
   )
 }
 
-function VectorStep({ step }) {
+function VectorStep({ step, nodeStyles }) {
   const style = nodeStyles[step.type] || nodeStyles.gray
   return (
     <div className={`border rounded px-2.5 py-1.5 text-[11px] font-medium leading-tight ${style}`}>
@@ -88,7 +109,7 @@ function VectorStep({ step }) {
   )
 }
 
-function AttackVector({ vector, index }) {
+function AttackVector({ vector, index, nodeStyles, riskLevelStyles }) {
   const maxSteps = 3
   const steps = vector.steps.slice(0, maxSteps)
   const levelStyle = riskLevelStyles[vector.riskLevel] || riskLevelStyles['MEDIUM RISK']
@@ -109,7 +130,7 @@ function AttackVector({ vector, index }) {
       <div className="flex flex-col gap-1">
         {steps.map((step, i) => (
           <div key={i} className="flex items-start gap-1">
-            <VectorStep step={step} />
+            <VectorStep step={step} nodeStyles={nodeStyles} />
             {i < steps.length - 1 && (
               <div className="flex items-center self-center">
                 <ArrowRight className="w-3 h-3 text-owasp-dim shrink-0" />
@@ -122,7 +143,7 @@ function AttackVector({ vector, index }) {
   )
 }
 
-function AttackPathCard({ risk }) {
+function AttackPathCard({ risk, nodeStyles, riskLevelStyles, chipColors }) {
   const vectors = (risk.attackVectors || []).slice(0, 3)
   const chips = risk.impactChips || []
 
@@ -170,7 +191,7 @@ function AttackPathCard({ risk }) {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {vectors.map((vec, i) => (
-              <AttackVector key={i} vector={vec} index={i} />
+              <AttackVector key={i} vector={vec} index={i} nodeStyles={nodeStyles} riskLevelStyles={riskLevelStyles} />
             ))}
           </div>
         </div>
@@ -196,6 +217,10 @@ function AttackPathCard({ risk }) {
 
 export default function AttackPaths() {
   const [activeCategory, setActiveCategory] = useState('all')
+  const { dark } = useTheme()
+  const nodeStyles = dark ? nodeStylesDark : nodeStylesLight
+  const riskLevelStyles = dark ? riskLevelStylesDark : riskLevelStylesLight
+  const chipColors = dark ? chipColorsDark : chipColorsLight
 
   const filtered = activeCategory === 'all'
     ? risks
@@ -273,7 +298,7 @@ export default function AttackPaths() {
       {/* Attack Path Cards */}
       <div className="flex flex-col gap-6">
         {filtered.map((risk) => (
-          <AttackPathCard key={risk.id} risk={risk} />
+          <AttackPathCard key={risk.id} risk={risk} nodeStyles={nodeStyles} riskLevelStyles={riskLevelStyles} chipColors={chipColors} />
         ))}
       </div>
 

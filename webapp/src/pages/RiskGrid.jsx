@@ -2,8 +2,9 @@ import { useState, useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Search, Grid, List, ChevronRight, AlertTriangle, Shield } from 'lucide-react'
 import { risks, categories } from '../data/risks'
+import { useTheme } from '../components/ThemeContext'
 
-const chipColorMap = {
+const chipColorMapDark = {
   pii: { bg: '#7f1d1d', text: '#fca5a5' },
   reg: { bg: '#713f12', text: '#fde68a' },
   poison: { bg: '#7c2d12', text: '#fdba74' },
@@ -14,6 +15,17 @@ const chipColorMap = {
   legal: { bg: '#831843', text: '#f9a8d4' },
   sec: { bg: '#1e3a5f', text: '#93c5fd' },
 }
+const chipColorMapLight = {
+  pii: { bg: '#fef2f2', text: '#b91c1c' },
+  reg: { bg: '#fefce8', text: '#a16207' },
+  poison: { bg: '#fff7ed', text: '#c2410c' },
+  dsr: { bg: '#f5f3ff', text: '#6d28d9' },
+  ops: { bg: '#ecfdf5', text: '#047857' },
+  trust: { bg: '#f5f3ff', text: '#7c3aed' },
+  fin: { bg: '#fffbeb', text: '#b45309' },
+  legal: { bg: '#fdf2f8', text: '#be185d' },
+  sec: { bg: '#eff6ff', text: '#1d4ed8' },
+}
 
 function getCategoryMeta(categoryId) {
   return categories.find(c => c.id === categoryId) || categories[0]
@@ -23,6 +35,8 @@ export default function RiskGrid() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [search, setSearch] = useState('')
   const [view, setView] = useState('grid')
+  const { dark } = useTheme()
+  const chipColorMap = dark ? chipColorMapDark : chipColorMapLight
 
   const activeCat = searchParams.get('cat') || 'all'
 
