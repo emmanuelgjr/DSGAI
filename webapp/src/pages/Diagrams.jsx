@@ -684,7 +684,7 @@ function getCategoryMeta(categoryId) {
 // Flow line with animated packet and arrowhead
 // ---------------------------------------------------------------------------
 
-function FlowEdge({ fromNode, toNode, color, animated, idx, diagramId, edgeNum }) {
+function FlowEdge({ fromNode, toNode, color, animated, label, idx, diagramId, curveOffset }) {
   const x1 = fromNode.x
   const y1 = fromNode.y
   const x2 = toNode.x
@@ -693,11 +693,25 @@ function FlowEdge({ fromNode, toNode, color, animated, idx, diagramId, edgeNum }
   const isAttack = color === '#f87171'
   const dur = [2, 2.5, 3, 3.5][idx % 4]
   const markerId = `arrow-${diagramId}-${idx}`
-  const pathId = `motion-${diagramId}-${fromNode.id}-${toNode.id}-${idx}`
+  const pathId = `path-${diagramId}-${idx}`
 
-  // Place the number badge at midpoint of the edge
-  const midX = (x1 + x2) / 2
-  const midY = (y1 + y2) / 2
+  // Compute curve control point: offset perpendicular to the line
+  const dx = x2 - x1
+  const dy = y2 - y1
+  const len = Math.sqrt(dx * dx + dy * dy) || 1
+  const nx = -dy / len
+  const ny = dx / len
+
+  // Each edge curves by a different amount so they don't stack
+  const offset = curveOffset != null ? curveOffset : [30, -30, 45, -45, 20, -20, 35, -35][idx % 8]
+  const cx = (x1 + x2) / 2 + nx * offset
+  const cy = (y1 + y2) / 2 + ny * offset
+
+  // The label sits at the curve apex (the control point)
+  const labelX = cx
+  const labelY = cy
+
+  const pathD = `M${x1},${y1} Q${cx},${cy} ${x2},${y2}`
 
   return (
     <g>
@@ -705,35 +719,31 @@ function FlowEdge({ fromNode, toNode, color, animated, idx, diagramId, edgeNum }
         <marker
           id={markerId}
           viewBox="0 0 10 10"
-          refX="10"
+          refX="9"
           refY="5"
-          markerWidth="6"
-          markerHeight="6"
+          markerWidth="5"
+          markerHeight="5"
           orient="auto-start-reverse"
         >
           <path d="M 0 0 L 10 5 L 0 10 z" fill={color} />
         </marker>
       </defs>
 
-      {/* Flow line */}
-      <line
-        x1={x1} y1={y1} x2={x2} y2={y2}
+      {/* Curved flow line */}
+      <path
+        d={pathD}
+        fill="none"
         stroke={color}
-        strokeWidth={isAttack ? 2.5 : 1.5}
+        strokeWidth={isAttack ? 2 : 1.5}
         strokeOpacity={isAttack ? 0.7 : 0.4}
         className={isAttack ? 'flow-line-attack' : 'flow-line'}
         markerEnd={`url(#${markerId})`}
       />
 
-      {/* Invisible path for animateMotion */}
-      <path
-        id={pathId}
-        d={`M${x1},${y1} L${x2},${y2}`}
-        fill="none"
-        stroke="none"
-      />
+      {/* Hidden path for packet animation */}
+      <path id={pathId} d={pathD} fill="none" stroke="none" />
 
-      {/* Animated data packet */}
+      {/* Animated data packet along curve */}
       {animated && (
         <circle r={isAttack ? 4 : 3} fill={color} opacity="0.85">
           <animateMotion dur={`${dur}s`} repeatCount="indefinite">
@@ -742,19 +752,31 @@ function FlowEdge({ fromNode, toNode, color, animated, idx, diagramId, edgeNum }
         </circle>
       )}
 
-      {/* Small numbered circle at midpoint */}
-      <circle cx={midX} cy={midY} r="9" fill={color} opacity="0.9" />
-      <text
-        x={midX}
-        y={midY + 4}
-        fontSize="10"
-        fontWeight="700"
-        fontFamily="monospace"
-        textAnchor="middle"
-        fill="#fff"
-      >
-        {edgeNum}
-      </text>
+      {/* Label at curve apex with background */}
+      {label && (
+        <g>
+          <rect
+            x={labelX - label.length * 3.6}
+            y={labelY - 9}
+            width={label.length * 7.2}
+            height={16}
+            rx="4"
+            className="node-bg"
+            style={{ opacity: 0.92 }}
+          />
+          <text
+            x={labelX}
+            y={labelY + 3}
+            fontSize="11"
+            fontFamily="monospace"
+            fontWeight="600"
+            textAnchor="middle"
+            className="diagram-sublabel"
+          >
+            {label}
+          </text>
+        </g>
+      )}
     </g>
   )
 }
@@ -852,9 +874,10 @@ function NetworkDiagram({ risk }) {
                 toNode={toNode}
                 color={edge.color}
                 animated={edge.animated}
+                label={edge.label}
+                curveOffset={edge.curveOffset}
                 idx={i}
                 diagramId={risk.id}
-                edgeNum={i + 1}
               />
             )
           })}
@@ -889,31 +912,6 @@ function NetworkDiagram({ risk }) {
             </g>
           ))}
         </svg>
-      </div>
-
-      {/* Flow Legend — numbered descriptions */}
-      <div className="px-4 py-3 border-t border-owasp-border">
-        <p className="text-[10px] font-bold text-owasp-dim uppercase tracking-wider mb-2">Data Flow</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-1.5">
-          {config.edges.map((edge, i) => {
-            const fromN = nodeMap[edge.from]
-            const toN = nodeMap[edge.to]
-            const isAttack = edge.color === '#f87171'
-            return (
-              <div key={i} className="flex items-center gap-2 min-w-0">
-                <span
-                  className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white"
-                  style={{ backgroundColor: edge.color }}
-                >
-                  {i + 1}
-                </span>
-                <span className={`text-xs truncate ${isAttack ? 'text-cat-leakage font-medium' : 'text-owasp-muted'}`}>
-                  {edge.label || `${fromN?.label} → ${toN?.label}`}
-                </span>
-              </div>
-            )
-          })}
-        </div>
       </div>
 
       {/* Footer */}
