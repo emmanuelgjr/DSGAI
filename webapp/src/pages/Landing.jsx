@@ -146,17 +146,23 @@ export default function Landing() {
 
         <div className="flex flex-wrap justify-center gap-4 pt-4">
           <Link
-            to="/risks"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-cat-leakage text-owasp-dark font-semibold hover:opacity-90 transition-opacity"
+            to="/assessment"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-cat-leakage text-white font-semibold hover:opacity-90 transition-opacity"
           >
-            Browse Risk Catalog
+            Start Risk Assessment
             <ArrowRight className="w-4 h-4" />
           </Link>
           <Link
-            to="/attack-paths"
+            to="/risks"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-owasp-border text-owasp-text font-semibold hover:bg-owasp-card transition-colors"
           >
-            View Attack Paths
+            Browse Risk Catalog
+          </Link>
+          <Link
+            to="/checklists"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-owasp-border text-owasp-text font-semibold hover:bg-owasp-card transition-colors"
+          >
+            Implementation Checklists
           </Link>
         </div>
       </section>
