@@ -2,14 +2,59 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Theme CSS Variables ── */
+/* Dark mode (default) */
+.dark {
+  --c-dark: #0e1117;
+  --c-card: #161b27;
+  --c-border: #252d40;
+  --c-hover: #404860;
+  --c-text: #e8eaf0;
+  --c-muted: #8896b0;
+  --c-dim: #6b7a99;
+  --c-cat-leakage-bg: #2a1520;
+  --c-cat-identity-bg: #1a1530;
+  --c-cat-governance-bg: #1a1a0d;
+  --c-cat-poisoning-bg: #1a1012;
+  --c-cat-infra-bg: #0d1f20;
+  --c-cat-compliance-bg: #1e1028;
+  --c-cat-attack-bg: #0f1a14;
+  color-scheme: dark;
+}
+
+/* Light mode */
+:root:not(.dark) {
+  --c-dark: #f8f9fb;
+  --c-card: #ffffff;
+  --c-border: #dde2eb;
+  --c-hover: #c4cad6;
+  --c-text: #1a202c;
+  --c-muted: #5a6578;
+  --c-dim: #8896b0;
+  --c-cat-leakage-bg: #fef2f2;
+  --c-cat-identity-bg: #f3f0ff;
+  --c-cat-governance-bg: #fefce8;
+  --c-cat-poisoning-bg: #fff7ed;
+  --c-cat-infra-bg: #ecfdf5;
+  --c-cat-compliance-bg: #fdf4ff;
+  --c-cat-attack-bg: #f0fdf4;
+  color-scheme: light;
+}
+
 /* Smooth scrolling */
 html { scroll-behavior: smooth; }
 
-/* Custom scrollbar */
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: #0e1117; }
-::-webkit-scrollbar-thumb { background: #252d40; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #404860; }
+/* Custom scrollbar - dark */
+.dark ::-webkit-scrollbar { width: 8px; }
+.dark ::-webkit-scrollbar-track { background: #0e1117; }
+.dark ::-webkit-scrollbar-thumb { background: #252d40; border-radius: 4px; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #404860; }
+
+/* Custom scrollbar - light */
+:root:not(.dark) ::-webkit-scrollbar { width: 8px; }
+:root:not(.dark) ::-webkit-scrollbar-track { background: #f8f9fb; }
+:root:not(.dark) ::-webkit-scrollbar-thumb { background: #c4cad6; border-radius: 4px; }
+:root:not(.dark) ::-webkit-scrollbar-thumb:hover { background: #8896b0; }
 
 /* Animation keyframes */
 @keyframes fadeIn {
@@ -53,3 +98,53 @@ html { scroll-behavior: smooth; }
 .card-stagger:nth-child(19) { animation-delay: 0.95s; }
 .card-stagger:nth-child(20) { animation-delay: 1.0s; }
 .card-stagger:nth-child(21) { animation-delay: 1.05s; }
+
+/* ── Network Diagram Animations ── */
+@keyframes flowPulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+@keyframes dataFlow {
+  0% { stroke-dashoffset: 20; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes packetMove {
+  0% { offset-distance: 0%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { offset-distance: 100%; opacity: 0; }
+}
+
+@keyframes nodeGlow {
+  0%, 100% { filter: drop-shadow(0 0 2px currentColor); }
+  50% { filter: drop-shadow(0 0 8px currentColor); }
+}
+
+@keyframes alertPulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+
+.flow-line {
+  stroke-dasharray: 6 4;
+  animation: dataFlow 0.8s linear infinite;
+}
+
+.flow-line-reverse {
+  stroke-dasharray: 6 4;
+  animation: dataFlow 0.8s linear infinite reverse;
+}
+
+.node-glow {
+  animation: nodeGlow 2s ease-in-out infinite;
+}
+
+.alert-pulse {
+  animation: alertPulse 1.5s ease-in-out infinite;
+}
+
+.packet {
+  animation: packetMove 2s ease-in-out infinite;
+}

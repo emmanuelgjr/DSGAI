@@ -210,7 +210,7 @@ export default function AttackPaths() {
             <Route className="w-5 h-5 text-cat-attack" />
           </div>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">Attack Path Overview</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-owasp-text">Attack Path Overview</h1>
             <p className="text-sm text-owasp-muted mt-0.5">
               Visual attack paths for all 21 OWASP GenAI data security risks
             </p>
@@ -230,7 +230,7 @@ export default function AttackPaths() {
           className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
             activeCategory === 'all'
               ? 'bg-owasp-border text-white border-owasp-hover'
-              : 'bg-owasp-card text-owasp-muted border-owasp-border hover:text-white hover:border-owasp-hover'
+              : 'bg-owasp-card text-owasp-muted border-owasp-border hover:text-owasp-text hover:border-owasp-hover'
           }`}
         >
           All ({risks.length})
@@ -245,7 +245,7 @@ export default function AttackPaths() {
               className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
                 isActive
                   ? `${catBgSoftClass[cat.id]} ${catColorClass[cat.id]} ${catBorderClass[cat.id]}`
-                  : `bg-owasp-card text-owasp-muted border-owasp-border hover:text-white hover:border-owasp-hover`
+                  : `bg-owasp-card text-owasp-muted border-owasp-border hover:text-owasp-text hover:border-owasp-hover`
               }`}
             >
               {cat.label} ({count})

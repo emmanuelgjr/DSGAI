@@ -309,6 +309,19 @@ export default function Landing() {
       </section>
 
       {/* ------------------------------------------------------------------ */}
+      {/* Project Lead                                                        */}
+      {/* ------------------------------------------------------------------ */}
+      <section className="text-center space-y-3 py-8 border-t border-owasp-border">
+        <p className="text-sm text-owasp-dim">Project Lead</p>
+        <h3 className="text-xl font-bold text-owasp-text">
+          Emmanuel Guilherme Junior
+        </h3>
+        <p className="text-cat-identity font-medium text-sm">
+          OWASP GenAI Data Security Initiative Lead
+        </p>
+      </section>
+
+      {/* ------------------------------------------------------------------ */}
       {/* Bottom CTA                                                          */}
       {/* ------------------------------------------------------------------ */}
       <section className="text-center space-y-4 py-8 border-t border-owasp-border">
@@ -321,7 +334,7 @@ export default function Landing() {
         </p>
         <Link
           to="/risks"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-cat-leakage text-owasp-dark font-semibold hover:opacity-90 transition-opacity"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-cat-leakage text-white font-semibold hover:opacity-90 transition-opacity"
         >
           Browse Risk Catalog
           <ArrowRight className="w-4 h-4" />

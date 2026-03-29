@@ -5,11 +5,12 @@ import Landing from './pages/Landing'
 import RiskGrid from './pages/RiskGrid'
 import RiskDetail from './pages/RiskDetail'
 import AttackPaths from './pages/AttackPaths'
+import Diagrams from './pages/Diagrams'
 import About from './pages/About'
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-owasp-dark text-owasp-text">
+    <div className="min-h-screen bg-owasp-dark text-owasp-text transition-colors duration-200">
       <Header />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <Routes>
@@ -17,6 +18,7 @@ export default function App() {
           <Route path="/risks" element={<RiskGrid />} />
           <Route path="/risks/:id" element={<RiskDetail />} />
           <Route path="/attack-paths" element={<AttackPaths />} />
+          <Route path="/diagrams" element={<Diagrams />} />
           <Route path="/about" element={<About />} />
         </Routes>
       </main>

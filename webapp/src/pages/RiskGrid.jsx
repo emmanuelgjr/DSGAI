@@ -61,7 +61,7 @@ export default function RiskGrid() {
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <Shield className="w-8 h-8 text-cat-leakage" />
-          <h1 className="text-3xl font-bold text-white">Risk Catalog</h1>
+          <h1 className="text-3xl font-bold text-owasp-text">Risk Catalog</h1>
         </div>
         <p className="text-owasp-muted text-lg">
           21 data security risks across the GenAI lifecycle
@@ -88,7 +88,7 @@ export default function RiskGrid() {
               className={`p-2.5 transition-colors ${
                 view === 'grid'
                   ? 'bg-owasp-border text-white'
-                  : 'text-owasp-dim hover:text-white'
+                  : 'text-owasp-dim hover:text-owasp-text'
               }`}
               title="Grid view"
             >
@@ -99,7 +99,7 @@ export default function RiskGrid() {
               className={`p-2.5 transition-colors ${
                 view === 'list'
                   ? 'bg-owasp-border text-white'
-                  : 'text-owasp-dim hover:text-white'
+                  : 'text-owasp-dim hover:text-owasp-text'
               }`}
               title="List view"
             >
@@ -115,7 +115,7 @@ export default function RiskGrid() {
             className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
               activeCat === 'all'
                 ? 'bg-white text-owasp-dark border-white'
-                : 'border-owasp-border text-owasp-muted hover:text-white hover:border-owasp-hover'
+                : 'border-owasp-border text-owasp-muted hover:text-owasp-text hover:border-owasp-hover'
             }`}
           >
             All ({risks.length})
@@ -190,7 +190,7 @@ export default function RiskGrid() {
                   </div>
 
                   {/* Title */}
-                  <h3 className="text-white font-semibold mb-1.5 group-hover:text-cat-leakage transition-colors leading-tight">
+                  <h3 className="text-owasp-text font-semibold mb-1.5 group-hover:text-cat-leakage transition-colors leading-tight">
                     {risk.title}
                   </h3>
 
@@ -287,7 +287,7 @@ export default function RiskGrid() {
 
                 {/* Title + tagline on mobile */}
                 <div className="min-w-0">
-                  <span className="text-sm text-white font-medium group-hover:text-cat-leakage transition-colors">
+                  <span className="text-sm text-owasp-text font-medium group-hover:text-cat-leakage transition-colors">
                     {risk.title}
                   </span>
                   <span className="hidden lg:inline text-owasp-dim text-xs ml-2">
@@ -334,7 +334,7 @@ export default function RiskGrid() {
                 </span>
 
                 {/* Arrow */}
-                <ChevronRight className="hidden sm:block w-4 h-4 text-owasp-dim group-hover:text-white transition-colors ml-auto" />
+                <ChevronRight className="hidden sm:block w-4 h-4 text-owasp-dim group-hover:text-owasp-text transition-colors ml-auto" />
               </Link>
             )
           })}

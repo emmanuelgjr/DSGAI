@@ -94,7 +94,7 @@ function Section({ title, icon: Icon, defaultOpen = false, accentColor, children
               style={{ color: accentColor || '#8896b0' }}
             />
           )}
-          <span className="text-white font-semibold text-sm">{title}</span>
+          <span className="text-owasp-text font-semibold text-sm">{title}</span>
         </div>
         {open ? (
           <ChevronUp className="w-4 h-4 text-owasp-dim shrink-0" />
@@ -124,7 +124,7 @@ function AttackFlowDiagram({ steps, accentColor }) {
                 borderColor: accentColor + '40',
               }}
             >
-              <div className="text-sm font-semibold text-white">{step.label}</div>
+              <div className="text-sm font-semibold text-owasp-text">{step.label}</div>
               <div className="text-xs text-owasp-muted mt-0.5">{step.sublabel}</div>
             </div>
             {i < steps.length - 1 && (
@@ -150,7 +150,7 @@ function AttackVectorColumn({ vector }) {
   return (
     <div className="bg-owasp-dark rounded-xl border border-owasp-border p-4 flex flex-col items-center">
       {/* Vector Title + Risk Level */}
-      <h4 className="text-white font-semibold text-sm text-center mb-2">
+      <h4 className="text-owasp-text font-semibold text-sm text-center mb-2">
         {vector.title}
       </h4>
       <span
@@ -205,10 +205,10 @@ function PrevNextNav({ currentIndex }) {
           to={`/risks/${prev.id}`}
           className="flex items-center gap-2 px-4 py-3 bg-owasp-card border border-owasp-border rounded-lg hover:border-owasp-hover transition-colors group flex-1 min-w-0"
         >
-          <ArrowLeft className="w-4 h-4 text-owasp-dim group-hover:text-white transition-colors shrink-0" />
+          <ArrowLeft className="w-4 h-4 text-owasp-dim group-hover:text-owasp-text transition-colors shrink-0" />
           <div className="min-w-0">
             <div className="text-[10px] text-owasp-dim uppercase tracking-wider">Previous</div>
-            <div className="text-sm text-white font-medium truncate">{prev.id} — {prev.title}</div>
+            <div className="text-sm text-owasp-text font-medium truncate">{prev.id} — {prev.title}</div>
           </div>
         </Link>
       ) : (
@@ -222,9 +222,9 @@ function PrevNextNav({ currentIndex }) {
         >
           <div className="min-w-0">
             <div className="text-[10px] text-owasp-dim uppercase tracking-wider">Next</div>
-            <div className="text-sm text-white font-medium truncate">{next.id} — {next.title}</div>
+            <div className="text-sm text-owasp-text font-medium truncate">{next.id} — {next.title}</div>
           </div>
-          <ArrowRight className="w-4 h-4 text-owasp-dim group-hover:text-white transition-colors shrink-0" />
+          <ArrowRight className="w-4 h-4 text-owasp-dim group-hover:text-owasp-text transition-colors shrink-0" />
         </Link>
       ) : (
         <div className="flex-1" />
@@ -253,13 +253,13 @@ export default function RiskDetail() {
     return (
       <div className="py-20 text-center">
         <AlertTriangle className="w-12 h-12 text-owasp-dim mx-auto mb-4" />
-        <h2 className="text-xl font-bold text-white mb-2">Risk Not Found</h2>
+        <h2 className="text-xl font-bold text-owasp-text mb-2">Risk Not Found</h2>
         <p className="text-owasp-muted mb-6">
           No risk entry matches the ID <span className="font-mono text-cat-leakage">{id}</span>.
         </p>
         <Link
           to="/risks"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-owasp-card border border-owasp-border rounded-lg text-sm text-white hover:border-owasp-hover transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-owasp-card border border-owasp-border rounded-lg text-sm text-owasp-text hover:border-owasp-hover transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Catalog
@@ -278,7 +278,7 @@ export default function RiskDetail() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <Link
           to="/risks"
-          className="inline-flex items-center gap-2 text-sm text-owasp-muted hover:text-white transition-colors"
+          className="inline-flex items-center gap-2 text-sm text-owasp-muted hover:text-owasp-text transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Risk Catalog
@@ -310,7 +310,7 @@ export default function RiskDetail() {
           </span>
         </div>
         <h1
-          className="text-3xl sm:text-4xl font-bold text-white mb-2"
+          className="text-3xl sm:text-4xl font-bold text-owasp-text mb-2"
           style={{ textDecorationColor: cat.color }}
         >
           {risk.title}
@@ -401,7 +401,7 @@ export default function RiskDetail() {
             style={{ color: cat.color }}
           />
           <div>
-            <h3 className="text-white font-semibold text-sm mb-2">Illustrative Scenario</h3>
+            <h3 className="text-owasp-text font-semibold text-sm mb-2">Illustrative Scenario</h3>
             <p className="text-owasp-muted text-sm leading-relaxed">
               {risk.illustrativeScenario}
             </p>
@@ -413,7 +413,7 @@ export default function RiskDetail() {
       {/* 6. Impact */}
       {/* ------------------------------------------------------------------ */}
       <div className="space-y-3">
-        <h3 className="text-white font-semibold text-sm flex items-center gap-2">
+        <h3 className="text-owasp-text font-semibold text-sm flex items-center gap-2">
           <Shield className="w-4 h-4" style={{ color: cat.color }} />
           Impact
         </h3>
@@ -515,7 +515,7 @@ export default function RiskDetail() {
       {/* ------------------------------------------------------------------ */}
       {risk.cves.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-white font-semibold text-sm flex items-center gap-2">
+          <h3 className="text-owasp-text font-semibold text-sm flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-red-400" />
             Known CVEs ({risk.cves.length})
           </h3>
@@ -541,7 +541,7 @@ export default function RiskDetail() {
       {/* ------------------------------------------------------------------ */}
       {risk.crossReferences.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-white font-semibold text-sm flex items-center gap-2">
+          <h3 className="text-owasp-text font-semibold text-sm flex items-center gap-2">
             <Layers className="w-4 h-4" style={{ color: cat.color }} />
             Cross-References
           </h3>

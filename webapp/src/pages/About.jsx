@@ -162,7 +162,7 @@ function SectionHeading({ icon: Icon, title, subtitle }) {
         <Icon className="w-5 h-5 text-cat-leakage" />
       </div>
       <div>
-        <h2 className="text-xl font-bold text-white">{title}</h2>
+        <h2 className="text-xl font-bold text-owasp-text">{title}</h2>
         {subtitle && <p className="text-sm text-owasp-muted mt-1">{subtitle}</p>}
       </div>
     </div>
@@ -179,7 +179,7 @@ export default function About() {
             <BookOpen className="w-6 h-6 text-cat-leakage" />
           </div>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">
+            <h1 className="text-2xl sm:text-3xl font-bold text-owasp-text">
               About This Project
             </h1>
             <p className="text-sm text-owasp-muted mt-0.5">
@@ -189,7 +189,7 @@ export default function About() {
         </div>
         <div className="bg-owasp-card rounded-xl border border-owasp-border p-6 mt-6">
           <p className="text-owasp-text leading-relaxed">
-            The <strong className="text-white">OWASP GenAI Data Security Guide</strong> identifies
+            The <strong className="text-owasp-text">OWASP GenAI Data Security Guide</strong> identifies
             and catalogs the top 21 data security risks specific to generative AI systems. Published
             by the OWASP GenAI Security Project in March 2026, it provides security teams, architects,
             and data protection officers with a structured framework for understanding, prioritizing,
@@ -218,7 +218,7 @@ export default function About() {
           </p>
 
           <div className="bg-owasp-dark rounded-lg border border-owasp-border p-4">
-            <h3 className="text-sm font-semibold text-white mb-2">The Context Window Problem</h3>
+            <h3 className="text-sm font-semibold text-owasp-text mb-2">The Context Window Problem</h3>
             <p className="text-sm text-owasp-muted leading-relaxed">
               The context window aggregates data from <strong className="text-owasp-text">multiple trust domains</strong> into
               a <strong className="text-owasp-text">single flat namespace with no internal access control</strong>.
@@ -228,7 +228,7 @@ export default function About() {
             </p>
           </div>
 
-          <h3 className="text-sm font-semibold text-white mt-4 mb-3">Data Categories at Risk</h3>
+          <h3 className="text-sm font-semibold text-owasp-text mt-4 mb-3">Data Categories at Risk</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[
               {
@@ -268,7 +268,7 @@ export default function About() {
               >
                 <item.icon className="w-4 h-4 text-cat-governance mt-0.5 shrink-0" />
                 <div>
-                  <div className="text-xs font-semibold text-white">{item.label}</div>
+                  <div className="text-xs font-semibold text-owasp-text">{item.label}</div>
                   <div className="text-[11px] text-owasp-muted leading-snug mt-0.5">{item.desc}</div>
                 </div>
               </div>
@@ -320,7 +320,7 @@ export default function About() {
               <div className="min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <cap.icon className="w-4 h-4 text-cat-governance shrink-0" />
-                  <h3 className="text-sm font-semibold text-white">{cap.title}</h3>
+                  <h3 className="text-sm font-semibold text-owasp-text">{cap.title}</h3>
                 </div>
                 <p className="text-xs text-owasp-muted leading-relaxed">{cap.description}</p>
               </div>
@@ -348,7 +348,7 @@ export default function About() {
                   <t.icon className={`w-5 h-5 ${t.color}`} />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">
+                  <h3 className="text-base font-bold text-owasp-text">
                     {t.tier}: {t.label}
                   </h3>
                 </div>
@@ -382,10 +382,10 @@ export default function About() {
               rel="noopener noreferrer"
               className="bg-owasp-card rounded-lg border border-owasp-border p-4 hover:border-owasp-hover transition-colors flex items-center justify-between gap-3 group"
             >
-              <span className="text-sm font-medium text-owasp-text group-hover:text-white transition-colors">
+              <span className="text-sm font-medium text-owasp-text group-hover:text-owasp-text transition-colors">
                 {link.label}
               </span>
-              <ExternalLink className="w-4 h-4 text-owasp-muted group-hover:text-white transition-colors shrink-0" />
+              <ExternalLink className="w-4 h-4 text-owasp-muted group-hover:text-owasp-text transition-colors shrink-0" />
             </a>
           ))}
         </div>
@@ -395,7 +395,7 @@ export default function About() {
       <section className="mb-12">
         <div className="bg-owasp-card rounded-xl border border-owasp-border p-6 text-center">
           <Download className="w-8 h-8 text-cat-infra mx-auto mb-3" />
-          <h3 className="text-lg font-bold text-white mb-2">Download the Original PDF</h3>
+          <h3 className="text-lg font-bold text-owasp-text mb-2">Download the Original PDF</h3>
           <p className="text-sm text-owasp-muted mb-4 max-w-lg mx-auto">
             Access the full OWASP GenAI Data Security Guide in its original PDF format,
             including all 21 risk entries, attack diagrams, and mitigation tables.
@@ -413,12 +413,38 @@ export default function About() {
         </div>
       </section>
 
+      {/* Project Lead */}
+      <section className="mb-12">
+        <SectionHeading
+          icon={Users}
+          title="Project Lead"
+          subtitle="OWASP GenAI Data Security Initiative"
+        />
+        <div className="bg-owasp-card rounded-xl border border-owasp-border p-6">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-14 h-14 rounded-full bg-cat-identity-bg flex items-center justify-center border-2 border-cat-identity">
+              <Users className="w-7 h-7 text-cat-identity" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-owasp-text">Emmanuel Guilherme Junior</h3>
+              <p className="text-sm text-cat-identity font-medium">OWASP GenAI Data Security Initiative Lead</p>
+            </div>
+          </div>
+          <p className="text-sm text-owasp-muted leading-relaxed">
+            Leading the development and maintenance of the OWASP GenAI Data Security framework,
+            driving the identification, documentation, and mitigation of data security risks
+            across the full GenAI lifecycle. This interactive web application was created to make
+            the research more accessible and actionable for security teams worldwide.
+          </p>
+        </div>
+      </section>
+
       {/* License */}
       <section className="mb-8">
         <div className="bg-owasp-card rounded-xl border border-owasp-border p-6">
           <div className="flex items-center gap-3 mb-3">
             <Scale className="w-5 h-5 text-cat-compliance" />
-            <h3 className="text-base font-bold text-white">License</h3>
+            <h3 className="text-base font-bold text-owasp-text">License</h3>
           </div>
           <p className="text-sm text-owasp-text leading-relaxed">
             This work is licensed under the{' '}
