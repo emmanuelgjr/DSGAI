@@ -684,7 +684,7 @@ function getCategoryMeta(categoryId) {
 // Flow line with animated packet and arrowhead
 // ---------------------------------------------------------------------------
 
-function FlowEdge({ fromNode, toNode, color, animated, label, idx, diagramId, labelPos }) {
+function FlowEdge({ fromNode, toNode, color, animated, idx, diagramId, edgeNum }) {
   const x1 = fromNode.x
   const y1 = fromNode.y
   const x2 = toNode.x
@@ -695,21 +695,12 @@ function FlowEdge({ fromNode, toNode, color, animated, label, idx, diagramId, la
   const markerId = `arrow-${diagramId}-${idx}`
   const pathId = `motion-${diagramId}-${fromNode.id}-${toNode.id}-${idx}`
 
-  // Place label along the edge: labelPos 0-1, default alternates by index
-  const t = labelPos != null ? labelPos : [0.35, 0.5, 0.65, 0.4, 0.6, 0.45, 0.55, 0.3][idx % 8]
-  const dx = x2 - x1
-  const dy = y2 - y1
-  const len = Math.sqrt(dx * dx + dy * dy) || 1
-  const nx = -dy / len
-  const ny = dx / len
-  // Alternate perpendicular direction per edge
-  const perpSign = idx % 2 === 0 ? 1 : -1
-  const mx = x1 + dx * t + nx * 14 * perpSign
-  const my = y1 + dy * t + ny * 14 * perpSign
+  // Place the number badge at midpoint of the edge
+  const midX = (x1 + x2) / 2
+  const midY = (y1 + y2) / 2
 
   return (
     <g>
-      {/* Per-edge arrow marker */}
       <defs>
         <marker
           id={markerId}
@@ -728,8 +719,8 @@ function FlowEdge({ fromNode, toNode, color, animated, label, idx, diagramId, la
       <line
         x1={x1} y1={y1} x2={x2} y2={y2}
         stroke={color}
-        strokeWidth={isAttack ? 2 : 1.5}
-        strokeOpacity={isAttack ? 0.8 : 0.5}
+        strokeWidth={isAttack ? 2.5 : 1.5}
+        strokeOpacity={isAttack ? 0.7 : 0.4}
         className={isAttack ? 'flow-line-attack' : 'flow-line'}
         markerEnd={`url(#${markerId})`}
       />
@@ -744,41 +735,26 @@ function FlowEdge({ fromNode, toNode, color, animated, label, idx, diagramId, la
 
       {/* Animated data packet */}
       {animated && (
-        <circle
-          r={isAttack ? 4 : 3}
-          fill={color}
-          opacity="0.9"
-        >
+        <circle r={isAttack ? 4 : 3} fill={color} opacity="0.85">
           <animateMotion dur={`${dur}s`} repeatCount="indefinite">
             <mpath href={`#${pathId}`} />
           </animateMotion>
         </circle>
       )}
 
-      {/* Edge label with background for readability */}
-      {label && (
-        <g>
-          <rect
-            x={mx - label.length * 3.8}
-            y={my - 10}
-            width={label.length * 7.6}
-            height={15}
-            rx="3"
-            className="node-bg"
-          />
-          <text
-            x={mx}
-            y={my + 2}
-            fontSize="12"
-            fontFamily="monospace"
-            fontWeight="600"
-            textAnchor="middle"
-            className="diagram-sublabel"
-          >
-            {label}
-          </text>
-        </g>
-      )}
+      {/* Small numbered circle at midpoint */}
+      <circle cx={midX} cy={midY} r="9" fill={color} opacity="0.9" />
+      <text
+        x={midX}
+        y={midY + 4}
+        fontSize="10"
+        fontWeight="700"
+        fontFamily="monospace"
+        textAnchor="middle"
+        fill="#fff"
+      >
+        {edgeNum}
+      </text>
     </g>
   )
 }
@@ -876,10 +852,9 @@ function NetworkDiagram({ risk }) {
                 toNode={toNode}
                 color={edge.color}
                 animated={edge.animated}
-                label={edge.label}
-                labelPos={edge.labelPos}
                 idx={i}
                 diagramId={risk.id}
+                edgeNum={i + 1}
               />
             )
           })}
@@ -914,6 +889,31 @@ function NetworkDiagram({ risk }) {
             </g>
           ))}
         </svg>
+      </div>
+
+      {/* Flow Legend — numbered descriptions */}
+      <div className="px-4 py-3 border-t border-owasp-border">
+        <p className="text-[10px] font-bold text-owasp-dim uppercase tracking-wider mb-2">Data Flow</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-1.5">
+          {config.edges.map((edge, i) => {
+            const fromN = nodeMap[edge.from]
+            const toN = nodeMap[edge.to]
+            const isAttack = edge.color === '#f87171'
+            return (
+              <div key={i} className="flex items-center gap-2 min-w-0">
+                <span
+                  className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white"
+                  style={{ backgroundColor: edge.color }}
+                >
+                  {i + 1}
+                </span>
+                <span className={`text-xs truncate ${isAttack ? 'text-cat-leakage font-medium' : 'text-owasp-muted'}`}>
+                  {edge.label || `${fromN?.label} → ${toN?.label}`}
+                </span>
+              </div>
+            )
+          })}
+        </div>
       </div>
 
       {/* Footer */}
@@ -1054,14 +1054,17 @@ export default function Diagrams() {
           {filtered.map(risk => {
             const rCat = getCategoryMeta(risk.category)
             return (
-              <a
+              <button
                 key={risk.id}
-                href={`#diagram-${risk.id}`}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium border border-owasp-border hover:border-owasp-hover bg-owasp-dark transition-colors"
+                onClick={() => {
+                  const el = document.getElementById(`diagram-${risk.id}`)
+                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium border border-owasp-border hover:border-owasp-hover bg-owasp-dark transition-colors cursor-pointer"
                 style={{ color: rCat.color }}
               >
                 {risk.id}
-              </a>
+              </button>
             )
           })}
         </div>
