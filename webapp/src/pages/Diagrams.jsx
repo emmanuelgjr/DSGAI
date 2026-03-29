@@ -701,8 +701,8 @@ function FlowEdge({ fromNode, toNode, color, animated, label, idx, diagramId }) 
   const len = Math.sqrt(dx * dx + dy * dy) || 1
   const nx = -dy / len
   const ny = dx / len
-  const mx = (x1 + x2) / 2 + nx * 10
-  const my = (y1 + y2) / 2 + ny * 10
+  const mx = (x1 + x2) / 2 + nx * 14
+  const my = (y1 + y2) / 2 + ny * 14
 
   return (
     <g>
@@ -752,18 +752,29 @@ function FlowEdge({ fromNode, toNode, color, animated, label, idx, diagramId }) 
         </circle>
       )}
 
-      {/* Edge label */}
+      {/* Edge label with background for readability */}
       {label && (
-        <text
-          x={mx}
-          y={my}
-          fontSize="9"
-          fontFamily="monospace"
-          textAnchor="middle"
-          className="diagram-sublabel"
-        >
-          {label}
-        </text>
+        <g>
+          <rect
+            x={mx - label.length * 3.2}
+            y={my - 9}
+            width={label.length * 6.4}
+            height={13}
+            rx="3"
+            className="node-bg"
+          />
+          <text
+            x={mx}
+            y={my + 1}
+            fontSize="10"
+            fontFamily="monospace"
+            fontWeight="600"
+            textAnchor="middle"
+            className="diagram-sublabel"
+          >
+            {label}
+          </text>
+        </g>
       )}
     </g>
   )
@@ -837,12 +848,12 @@ function NetworkDiagram({ risk }) {
               />
               <text
                 x={config.dangerZone.x + config.dangerZone.width / 2}
-                y={config.dangerZone.y + 14}
-                fontSize="10"
+                y={config.dangerZone.y + 16}
+                fontSize="11"
                 fontFamily="monospace"
                 fontWeight="bold"
                 textAnchor="middle"
-                opacity="0.7"
+                opacity="0.85"
                 className="danger-zone-text"
               >
                 {config.dangerZone.label}
@@ -872,14 +883,25 @@ function NetworkDiagram({ risk }) {
           {/* Nodes */}
           {config.nodes.map(node => (
             <g key={node.id}>
-              {/* Icon with background circle */}
+              {/* Node background circle */}
+              <circle cx={node.x} cy={node.y} r="24" className="node-bg" />
+              {/* Icon */}
               <RenderIcon icon={node.icon} x={node.x} y={node.y} color={node.color} />
-              {/* Label */}
+              {/* Label with background pill */}
+              <rect
+                x={node.x - node.label.length * 3.5}
+                y={node.y + 24}
+                width={node.label.length * 7}
+                height={15}
+                rx="4"
+                className="node-bg"
+              />
               <text
                 x={node.x}
-                y={node.y + 32}
-                fontSize="10"
+                y={node.y + 35}
+                fontSize="11"
                 fontFamily="monospace"
+                fontWeight="600"
                 textAnchor="middle"
                 className="diagram-label"
               >
@@ -931,19 +953,19 @@ function DiagramLegend() {
           <svg width="32" height="10" viewBox="0 0 32 10">
             <line x1="0" y1="5" x2="32" y2="5" stroke="#60a5fa" strokeWidth="1.5" strokeDasharray="6 4" />
           </svg>
-          <span className="text-[11px] text-owasp-muted">Normal flow</span>
+          <span className="text-xs text-owasp-muted">Normal flow</span>
         </div>
         <div className="flex items-center gap-2">
           <svg width="32" height="10" viewBox="0 0 32 10">
             <line x1="0" y1="5" x2="32" y2="5" stroke="#f87171" strokeWidth="2" strokeDasharray="8 3" />
           </svg>
-          <span className="text-[11px] text-owasp-muted">Attack path</span>
+          <span className="text-xs text-owasp-muted">Attack path</span>
         </div>
         <div className="flex items-center gap-2">
           <svg width="24" height="16" viewBox="0 0 24 16">
             <rect x="1" y="1" width="22" height="14" rx="3" fill="none" stroke="#f87171" strokeWidth="1.5" strokeDasharray="4 2" opacity="0.6" />
           </svg>
-          <span className="text-[11px] text-owasp-muted">Danger zone</span>
+          <span className="text-xs text-owasp-muted">Danger zone</span>
         </div>
 
         {/* Icon types */}
@@ -952,14 +974,14 @@ function DiagramLegend() {
             <circle cx="8" cy="5" r="3" fill="none" stroke="#60a5fa" strokeWidth="1" />
             <path d="M3 14 C3 10 6 8 8 8 C10 8 13 10 13 14" fill="none" stroke="#60a5fa" strokeWidth="1" />
           </svg>
-          <span className="text-[11px] text-owasp-muted">User / Actor</span>
+          <span className="text-xs text-owasp-muted">User / Actor</span>
         </div>
         <div className="flex items-center gap-2">
           <svg width="16" height="16" viewBox="0 0 16 16">
             <rect x="1" y="2" width="14" height="5" rx="2" fill="none" stroke="#a78bfa" strokeWidth="1" />
             <rect x="1" y="9" width="14" height="5" rx="2" fill="none" stroke="#a78bfa" strokeWidth="1" />
           </svg>
-          <span className="text-[11px] text-owasp-muted">Server</span>
+          <span className="text-xs text-owasp-muted">Server</span>
         </div>
         <div className="flex items-center gap-2">
           <svg width="16" height="16" viewBox="0 0 16 16">
@@ -968,13 +990,13 @@ function DiagramLegend() {
             <line x1="14" y1="4" x2="14" y2="12" stroke="#2dd4bf" strokeWidth="1" />
             <ellipse cx="8" cy="12" rx="6" ry="3" fill="none" stroke="#2dd4bf" strokeWidth="1" />
           </svg>
-          <span className="text-[11px] text-owasp-muted">Database</span>
+          <span className="text-xs text-owasp-muted">Database</span>
         </div>
         <div className="flex items-center gap-2">
           <svg width="16" height="16" viewBox="0 0 16 16">
             <path d="M3 10 C1 10 0 9 0 7.5 C0 5.5 2 4 4 4 C4.5 2 6 1 8 1 C10.5 1 12 2.5 12.5 4 C14 4.5 15 5.5 15 7 C15 8.5 13.5 10 12 10 Z" fill="none" stroke="#60a5fa" strokeWidth="1" />
           </svg>
-          <span className="text-[11px] text-owasp-muted">Cloud / LLM</span>
+          <span className="text-xs text-owasp-muted">Cloud / LLM</span>
         </div>
       </div>
     </div>
@@ -1027,7 +1049,7 @@ export default function Diagrams() {
           onClick={() => setActiveCat('all')}
           className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
             activeCat === 'all'
-              ? 'bg-owasp-text text-owasp-bg border-owasp-text'
+              ? 'bg-owasp-border text-owasp-text border-owasp-hover font-bold'
               : 'bg-owasp-card text-owasp-muted border-owasp-border hover:border-owasp-hover'
           }`}
         >
