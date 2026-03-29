@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSGAI21 — Disinformation & Integrity Attacks via Data Poisoning: Attack Path</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: #f0f4f8;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 24px;
+    min-height: 100vh;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.13);
+    width: 880px;
+    max-width: 100%;
+  }
+
+  .header {
+    background: #1a0f0f;
+    color: #fff;
+    padding: 28px 36px 22px;
+    text-align: center;
+  }
+  .header .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: #f87171;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .header h1 { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+  .header p  { font-size: 13px; color: #c8a0a0; font-weight: 400; }
+
+  .body { padding: 32px 36px 28px; display: flex; flex-direction: column; gap: 0; }
+
+  .section-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: #6b7a99; margin-bottom: 10px; padding-left: 2px;
+  }
+
+  /* node colours */
+  .node-attacker { background:#fff0f0; border-color:#e05c5c; color:#c0392b; }
+  .node-action   { background:#fff8ec; border-color:#f0a830; color:#7a4f00; }
+  .node-source   { background:#eaf2ff; border-color:#5b8dee; color:#1a3a7a; }
+  .node-rag      { background:#f5f0ff; border-color:#a855f7; color:#5a0a8a; }
+  .node-leak     { background:#ffeaea; border-color:#e05c5c; color:#7a1a1a; }
+  .node-gap      { background:#fff0f0; border-color:#e05c5c; color:#7a1a1a; }
+  .node-warn     { background:#fffbe6; border-color:#d4a000; color:#5a3e00; }
+  .node-ok       { background:#f0fff4; border-color:#27ae60; color:#145a32; }
+  .node-poison   { background:#ffeaea; border-color:#f87171; color:#7a1a1a; }
+
+  .divider { height: 1px; background: #e4eaf4; margin: 0 0 20px; }
+
+  /* ── MAIN FLOW ── */
+  .main-flow {
+    display: flex; align-items: center; gap: 0;
+    margin-bottom: 20px; background: #f7f9fc;
+    border: 1.5px solid #d8e2f0; border-radius: 12px;
+    padding: 16px 18px; overflow-x: auto;
+  }
+  .flow-step { flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; min-width:108px; }
+  .flow-box {
+    border-radius:8px; padding:9px 10px; font-size:12px;
+    font-weight:600; text-align:center; line-height:1.3; width:100%; border:1.5px solid;
+  }
+  .flow-sub { font-size:10px; color:#8896b0; text-align:center; font-weight:400; line-height:1.3; max-width:115px; }
+  .flow-arr { font-size:20px; color:#aab5cc; flex-shrink:0; padding:0 4px; margin-bottom:20px; }
+  .flow-arr.red   { color:#e05c5c; }
+  .flow-arr.amber { color:#f0a830; }
+
+  /* ── INTEGRITY FAILURE VISUAL ── */
+  .integrity-section {
+    background: #f7f9fc;
+    border: 1.5px solid #d8e2f0;
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+  }
+  .integrity-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: #6b7a99; margin-bottom: 14px; text-align: center;
+  }
+
+  /* The key insight: model didn't hallucinate — data was poisoned */
+  .insight-bar {
+    background: #1a0f0f;
+    border: 1.5px solid #f87171;
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin-bottom: 14px;
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; font-weight: 700; color: #f87171; letter-spacing: 0.5px;
+  }
+
+  /* Two attack surfaces side by side */
+  .surface-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .surface-card {
+    border-radius: 9px; border: 1.5px solid; padding: 12px 12px 10px;
+  }
+  .sc-train { background:#fff8f8; border-color:#e05c5c; }
+  .sc-rag   { background:#fdf5ff; border-color:#a855f7; }
+
+  .sc-label { font-size: 11px; font-weight: 700; margin-bottom: 8px; }
+  .sc-train .sc-label { color:#c0392b; }
+  .sc-rag   .sc-label { color:#5a0a8a; }
+
+  .sc-step {
+    border-radius: 6px; padding: 6px 9px; font-size: 10.5px;
+    font-weight: 600; border: 1.5px solid; margin-bottom: 5px;
+    line-height: 1.3; text-align: center;
+  }
+  .sc-train .sc-step { background:#fff0f0; border-color:#e05c5c; color:#7a1a1a; }
+  .sc-rag   .sc-step { background:#f5f0ff; border-color:#a855f7; color:#5a0a8a; }
+
+  .sc-arr { text-align: center; color: #aab5cc; font-size: 16px; margin: 3px 0; }
+  .sc-arr.red    { color:#e05c5c; }
+  .sc-arr.purple { color:#a855f7; }
+
+  /* crisis amplification row */
+  .crisis-bar {
+    background: #fffdf0;
+    border: 1.5px solid #d4a000;
+    border-radius: 8px;
+    padding: 11px 16px;
+    margin-top: 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .crisis-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; font-weight: 700;
+    background: #d4a000; color: #fff;
+    border-radius: 4px; padding: 2px 8px;
+    white-space: nowrap; flex-shrink: 0; margin-top: 1px;
+  }
+  .crisis-text { font-size: 10.5px; color: #5a3e00; line-height: 1.45; }
+
+  /* ── COLUMNS ── */
+  .columns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+  .attack-column { background:#f7f9fc; border:1.5px solid #d8e2f0; border-radius:10px; padding:16px 14px; }
+  .attack-column h3 {
+    font-size:11px; font-weight:700; text-transform:uppercase;
+    letter-spacing:1.2px; color:#6b7a99; margin-bottom:12px; text-align:center;
+  }
+  .node {
+    border-radius:8px; padding:9px 12px; font-size:12px;
+    font-weight:600; line-height:1.35; text-align:center;
+    margin-bottom:6px; border:1.5px solid;
+  }
+  .arrow { display:flex; justify-content:center; align-items:center; height:22px; color:#aab5cc; font-size:18px; line-height:1; }
+  .arrow.red    { color:#e05c5c; }
+  .arrow.amber  { color:#f0a830; }
+  .arrow.purple { color:#a855f7; }
+
+  .tag {
+    display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:9.5px;
+    background:#1a0f0f; color:#f87171; border-radius:4px;
+    padding:1px 6px; margin-bottom:4px; letter-spacing:0.5px;
+  }
+
+  /* ── IMPACT ROW ── */
+  .impact-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px; }
+  .impact-chip {
+    border-radius:8px; padding:9px 10px; font-size:11.5px;
+    font-weight:600; text-align:center; line-height:1.3; border:1.5px solid;
+  }
+  .chip-red    { background:#fff0f0; border-color:#e05c5c; color:#c0392b; }
+  .chip-amber  { background:#fff8ec; border-color:#f0a830; color:#7a4f00; }
+  .chip-purple { background:#f5f0ff; border-color:#a855f7; color:#5a0a8a; }
+  .chip-blue   { background:#eaf2ff; border-color:#5b8dee; color:#1a3a7a; }
+
+  .footer {
+    background:#1a0f0f; color:#c8a0a0; font-size:11px;
+    text-align:center; padding:11px 20px; letter-spacing:0.3px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="label">DSGAI21 · Attack Path</div>
+    <h1>Disinformation &amp; Integrity Attacks via Data Poisoning</h1>
+    <p>False data injected into trusted sources — surfaced by AI as authoritative, grounded, cited output</p>
+  </div>
+
+  <div class="body">
+
+    <!-- PRIMARY FLOW -->
+    <div class="section-label">Primary Attack Flow</div>
+    <div class="main-flow">
+      <div class="flow-step">
+        <div class="flow-box node-attacker">🎯 Adversary Seeds False Data</div>
+        <div class="flow-sub">Wiki, threat intel feed, open corpus, or RAG knowledge store</div>
+      </div>
+      <div class="flow-arr">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-source">Trusted Source Ingested</div>
+        <div class="flow-sub">No anomaly detection — false records achieve high semantic relevance</div>
+      </div>
+      <div class="flow-arr amber">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-rag">RAG Pipeline Retrieves Poisoned Record</div>
+        <div class="flow-sub">High semantic match — surfaced with full authority of retrieval system</div>
+      </div>
+      <div class="flow-arr amber">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-warn">AI Presents Disinformation as Fact</div>
+        <div class="flow-sub">Cited, grounded output — no hallucination occurred</div>
+      </div>
+      <div class="flow-arr red">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-leak">💥 Operational Damage</div>
+        <div class="flow-sub">Incorrect patch deployed · wrong clinical decision · false risk score</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- INTEGRITY FAILURE VISUAL -->
+    <div class="integrity-section">
+      <div class="integrity-title">The Integrity Attack — Two Surfaces, One Core Failure</div>
+
+      <div class="insight-bar">
+        ⚠ THE MODEL DID NOT HALLUCINATE — IT ACCURATELY RETRIEVED AND PRESENTED WHAT IT WAS GIVEN &nbsp;·&nbsp; THE FAILURE WAS ENTIRELY IN THE DATA
+      </div>
+
+      <div class="surface-grid">
+
+        <!-- TRAINING TIME -->
+        <div class="surface-card sc-train">
+          <div class="sc-label">🔴 Attack Surface 1 — Training Time</div>
+          <div class="sc-step">Malicious contributors inject misleading samples into open / crowdsourced / scraped dataset</div>
+          <div class="sc-arr red">↓</div>
+          <div class="sc-step">Subtly altered facts · fabricated citations · poisoned embeddings at low frequency</div>
+          <div class="sc-arr red">↓</div>
+          <div class="sc-step">Base or fine-tuned model internalizes false beliefs</div>
+          <div class="sc-arr red">↓</div>
+          <div class="sc-step">Technically challenging to remove without full retraining — persists through deployment</div>
+        </div>
+
+        <!-- RAG TIME -->
+        <div class="surface-card sc-rag">
+          <div class="sc-label">🟣 Attack Surface 2 — Retrieval Time</div>
+          <div class="sc-step">Adversary writes false records to trusted source: internal wiki · threat intel feed · news aggregator</div>
+          <div class="sc-arr purple">↓</div>
+          <div class="sc-step">False records retrieved with high semantic relevance — no trust-tier differentiation</div>
+          <div class="sc-arr purple">↓</div>
+          <div class="sc-step">Surfaced to users with implicit authority of grounded, cited AI output</div>
+          <div class="sc-arr purple">↓</div>
+          <div class="sc-step">Propagates into automated decisions before human verification step</div>
+        </div>
+
+      </div>
+
+      <!-- CRISIS AMPLIFICATION -->
+      <div class="crisis-bar">
+        <div class="crisis-badge">CRISIS AMPLIFICATION</div>
+        <div class="crisis-text">
+          During <strong>active incident response, zero-day cycles, or breaking threat intel</strong> — operators query AI rapidly under pressure with reduced capacity for source verification. An adversary seeding false technical details (incorrect CVE descriptions, fabricated patch status, misleading IOCs) into near-real-time RAG sources causes maximum damage precisely when it is least likely to be challenged. <em>Grok incident: production RAG system ingested and parroted externally introduced false information as authoritative output.</em>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- THREE ATTACK VECTORS -->
+    <div class="section-label">Attack Vectors</div>
+    <div class="columns">
+
+      <!-- VECTOR 1 -->
+      <div class="attack-column">
+        <h3>① Zero-Day Remediation Poisoning</h3>
+        <div class="tag">CRISIS TIMING</div>
+        <div class="node node-attacker">Adversary seeds fabricated patch instructions during active zero-day disclosure</div>
+        <div class="arrow">↓</div>
+        <div class="node node-source">Plausible-looking but incorrect remediation posted to threat intel aggregator</div>
+        <div class="arrow">↓</div>
+        <div class="node node-rag">Enterprise RAG pipelines index aggregator as trusted source — near real-time</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-warn">Security assistants retrieve and present false guidance as authoritative with citation</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">Teams deploy incorrect remediation believing systems are patched — discovered only via second-order incident</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ Every system performed exactly as designed — the integrity failure was in the data
+        </div>
+      </div>
+
+      <!-- VECTOR 2 -->
+      <div class="attack-column">
+        <h3>② Open Training Corpus Poisoning</h3>
+        <div class="tag">TRAINING TIME</div>
+        <div class="node node-attacker">Malicious contributors submit poisoned samples to crowdsourced or scraped dataset</div>
+        <div class="arrow">↓</div>
+        <div class="node node-source">Low-frequency injection — altered facts, fabricated citations — passes basic validation</div>
+        <div class="arrow">↓</div>
+        <div class="node node-action">No adversarial integrity evaluation before fine-tuning run</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-warn">Model internalizes false beliefs — encoded in weights, not in any retrievable document</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">False claims surface in production — removal requires full retraining · no Dataset Bill of Materials to scope impact</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ Even 250 poisoned samples can produce measurable impact (Anthropic research)
+        </div>
+      </div>
+
+      <!-- VECTOR 3 -->
+      <div class="attack-column">
+        <h3>③ Internal Wiki Write-Access Compromise</h3>
+        <div class="tag">KNOWLEDGE STORE</div>
+        <div class="node node-attacker">Attacker gains write access to internal wiki or knowledge base via phished credential</div>
+        <div class="arrow">↓</div>
+        <div class="node node-source">Inserts subtly false policy guidance, process documentation, or technical specs</div>
+        <div class="arrow">↓</div>
+        <div class="node node-rag">RAG pipeline indexes wiki as high-trust internal source — no write-access audit trail</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-warn">AI assistant surfaces false policy as authoritative to employees and automated workflows</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">Compliance or operational decisions made on false internal guidance — write access was treated as data management, not security boundary</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ Write access to RAG-indexed sources = write access to production AI output
+        </div>
+      </div>
+
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- IMPACT -->
+    <div class="section-label">Resulting Impact</div>
+    <div class="impact-row">
+      <div class="impact-chip chip-red">🧠 False Beliefs Encoded in Weights<br><span style="font-weight:400;font-size:10.5px;">Persist through deployment · resist targeted removal</span></div>
+      <div class="impact-chip chip-purple">📡 Authoritative Disinformation<br><span style="font-weight:400;font-size:10.5px;">Cited, grounded AI output — carries implicit retrieval authority</span></div>
+      <div class="impact-chip chip-amber">⚡ Operational Damage at Crisis Timing<br><span style="font-weight:400;font-size:10.5px;">Wrong patch deployed · false IOCs · incorrect clinical decision</span></div>
+      <div class="impact-chip chip-blue">🔗 Automated Pipeline Propagation<br><span style="font-weight:400;font-size:10.5px;">No human verification step — disinformation reaches decisions directly</span></div>
+    </div>
+
+  </div><!-- /body -->
+
+  <div class="footer">No CVE · Grok RAG Incident · O'Reilly "Crisis Time Disinformation" · Cross-ref: DSGAI04 Poisoning · DSGAI05 Integrity · DSGAI07 Lineage · DSGAI13 Vector Store</div>
+</div>
+</body>
+</html>

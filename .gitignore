@@ -1,0 +1,20 @@
+# Dependencies
+webapp/node_modules/
+
+# Build output
+webapp/dist/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp extraction files
+pdf_pages_*.txt
+
+# Env
+.env
+.env.local

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSGAI02 — Agent Identity & Credential Exposure: Attack Path</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: #f0f4f8;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 24px;
+    min-height: 100vh;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.13);
+    width: 860px;
+    max-width: 100%;
+  }
+
+  .header {
+    background: #12213d;
+    color: #fff;
+    padding: 28px 36px 22px;
+    text-align: center;
+  }
+  .header .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: #f0a830;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .header h1 { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+  .header p  { font-size: 13px; color: #a8b8d8; font-weight: 400; }
+
+  .body { padding: 32px 36px 28px; display: flex; flex-direction: column; gap: 0; }
+
+  /* ── MAIN FLOW ── */
+  .section-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: #6b7a99; margin-bottom: 10px; padding-left: 2px;
+  }
+
+  .main-flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 20px;
+    background: #f7f9fc;
+    border: 1.5px solid #d8e2f0;
+    border-radius: 12px;
+    padding: 16px 18px;
+    overflow-x: auto;
+  }
+  .flow-step {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; gap: 5px; min-width: 108px;
+  }
+  .flow-box {
+    border-radius: 8px; padding: 9px 10px; font-size: 12px;
+    font-weight: 600; text-align: center; line-height: 1.3;
+    width: 100%; border: 1.5px solid;
+  }
+  .flow-sub {
+    font-size: 10px; color: #8896b0; text-align: center;
+    font-weight: 400; line-height: 1.3; max-width: 110px;
+  }
+  .flow-arr { font-size: 20px; color: #aab5cc; flex-shrink: 0; padding: 0 4px; margin-bottom: 20px; }
+  .flow-arr.red    { color: #e05c5c; }
+  .flow-arr.amber  { color: #f0a830; }
+
+  /* node colour classes */
+  .node-attacker { background:#fff0f0; border-color:#e05c5c; color:#c0392b; }
+  .node-action   { background:#fff8ec; border-color:#f0a830; color:#7a4f00; }
+  .node-system   { background:#eaf2ff; border-color:#5b8dee; color:#1a3a7a; }
+  .node-leak     { background:#ffeaea; border-color:#e05c5c; color:#7a1a1a; }
+  .node-gray     { background:#f3f4f6; border-color:#c4c9d4; color:#4a5568; }
+  .node-purple   { background:#faf0ff; border-color:#9b59b6; color:#6c3483; }
+
+  .divider { height: 1px; background: #e4eaf4; margin: 0 0 20px; }
+
+  /* ── COLUMNS ── */
+  .columns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+
+  .attack-column {
+    background: #f7f9fc; border: 1.5px solid #d8e2f0;
+    border-radius: 10px; padding: 16px 14px;
+  }
+  .attack-column h3 {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: #6b7a99; margin-bottom: 12px; text-align: center;
+  }
+
+  .node {
+    border-radius: 8px; padding: 9px 12px; font-size: 12.5px;
+    font-weight: 600; line-height: 1.35; text-align: center;
+    position: relative; margin-bottom: 6px; border: 1.5px solid;
+  }
+  .arrow { display:flex; justify-content:center; align-items:center; height:22px; color:#aab5cc; font-size:18px; line-height:1; }
+  .arrow.red    { color:#e05c5c; }
+  .arrow.amber  { color:#f0a830; }
+  .arrow.purple { color:#9b59b6; }
+
+  .tag {
+    display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:9.5px;
+    background:#12213d; color:#a8c8ff; border-radius:4px;
+    padding:1px 6px; margin-bottom:4px; letter-spacing:0.5px;
+  }
+
+  /* ── CREDENTIAL CHAIN VISUAL ── */
+  .chain-section {
+    background: #f7f9fc; border: 1.5px solid #d8e2f0;
+    border-radius: 12px; padding: 18px 20px; margin-bottom: 20px;
+  }
+  .chain-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: #6b7a99; margin-bottom: 14px; text-align: center;
+  }
+  .chain-row {
+    display: flex; align-items: center; gap: 0; justify-content: center; flex-wrap: wrap;
+  }
+  .chain-node {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 4px; min-width: 120px; flex: 1;
+  }
+  .chain-box {
+    border-radius: 8px; padding: 8px 10px; font-size: 11.5px;
+    font-weight: 600; text-align: center; line-height: 1.3;
+    border: 1.5px solid; width: 100%;
+  }
+  .chain-sub { font-size: 10px; color: #8896b0; text-align: center; line-height: 1.3; max-width: 120px; }
+  .chain-arr { font-size: 18px; color: #f0a830; flex-shrink: 0; padding: 0 6px; margin-bottom: 24px; }
+  .chain-badge {
+    font-family: 'IBM Plex Mono', monospace; font-size: 9px;
+    background: #e05c5c; color: #fff; border-radius: 10px;
+    padding: 1px 7px; margin-top: 2px; display: inline-block;
+  }
+
+  /* ── IMPACT ROW ── */
+  .impact-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+  .impact-chip {
+    border-radius: 8px; padding: 9px 10px; font-size: 11.5px;
+    font-weight: 600; text-align: center; line-height: 1.3; border: 1.5px solid;
+  }
+  .chip-red    { background:#fff0f0; border-color:#e05c5c; color:#c0392b; }
+  .chip-amber  { background:#fff8ec; border-color:#f0a830; color:#7a4f00; }
+  .chip-purple { background:#faf0ff; border-color:#9b59b6; color:#6c3483; }
+  .chip-blue   { background:#eaf2ff; border-color:#5b8dee; color:#1a3a7a; }
+
+  .footer {
+    background: #12213d; color: #a8b8d8; font-size: 11px;
+    text-align: center; padding: 11px 20px; letter-spacing: 0.3px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="label">DSGAI02 · Attack Path</div>
+    <h1>Agent Identity &amp; Credential Exposure</h1>
+    <p>How NHI sprawl and inherited OAuth tokens become exfiltration paths</p>
+  </div>
+
+  <div class="body">
+
+    <!-- MAIN FLOW -->
+    <div class="section-label">Primary Attack Flow</div>
+    <div class="main-flow">
+
+      <div class="flow-step">
+        <div class="flow-box node-attacker">🎯 Attacker</div>
+        <div class="flow-sub">Prompt injection or direct compromise</div>
+      </div>
+      <div class="flow-arr">→</div>
+
+      <div class="flow-step">
+        <div class="flow-box node-action">Compromises Sub-Agent</div>
+        <div class="flow-sub">Via injected content in retrieved doc or tool output</div>
+      </div>
+      <div class="flow-arr amber">→</div>
+
+      <div class="flow-step">
+        <div class="flow-box node-system">Inherits Operator Token</div>
+        <div class="flow-sub">Full OAuth scope, no re-scoping applied</div>
+      </div>
+      <div class="flow-arr amber">→</div>
+
+      <div class="flow-step">
+        <div class="flow-box node-action">Accesses Data Tier</div>
+        <div class="flow-sub">Vector stores, embeddings, system prompts, model registries</div>
+      </div>
+      <div class="flow-arr red">→</div>
+
+      <div class="flow-step">
+        <div class="flow-box node-leak">💥 Exfiltration</div>
+        <div class="flow-sub">Sensitive data reconstructed and leaked externally</div>
+      </div>
+
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- CREDENTIAL INHERITANCE CHAIN -->
+    <div class="chain-section">
+      <div class="chain-title">Credential Inheritance Chain — The Core Architectural Flaw</div>
+      <div class="chain-row">
+
+        <div class="chain-node">
+          <div class="chain-box node-system">Human Operator</div>
+          <div class="chain-sub">Grants OAuth token with full read/write scope</div>
+        </div>
+        <div class="chain-arr">→</div>
+
+        <div class="chain-node">
+          <div class="chain-box node-action">Orchestration Agent</div>
+          <div class="chain-badge">token inherited ↓</div>
+          <div class="chain-sub">Receives operator token — full scope, long TTL</div>
+        </div>
+        <div class="chain-arr">→</div>
+
+        <div class="chain-node">
+          <div class="chain-box node-action">Sub-Agent A</div>
+          <div class="chain-badge">token inherited ↓</div>
+          <div class="chain-sub">Same credential, no re-scoping at spawn</div>
+        </div>
+        <div class="chain-arr">→</div>
+
+        <div class="chain-node">
+          <div class="chain-box node-action">Sub-Agent B</div>
+          <div class="chain-badge">token inherited ↓</div>
+          <div class="chain-sub">Shared credential — no identity boundary</div>
+        </div>
+        <div class="chain-arr" style="color:#e05c5c;">→</div>
+
+        <div class="chain-node">
+          <div class="chain-box node-leak">☠ Compromised Agent</div>
+          <div class="chain-sub">Attacker holds full-scope credential — entire data tier exposed</div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- THREE ATTACK VECTORS -->
+    <div class="section-label">Attack Vectors</div>
+    <div class="columns">
+
+      <!-- VECTOR 1 -->
+      <div class="attack-column">
+        <h3>① Prompt Injection via Tool Output</h3>
+        <div class="tag">ENTRY POINT</div>
+        <div class="node node-attacker">Attacker plants malicious payload</div>
+        <div class="arrow">↓</div>
+        <div class="node node-action">Injected into document / tool callback result</div>
+        <div class="arrow">↓</div>
+        <div class="node node-system">Agent retrieves and processes document</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-action">Payload hijacks agent instruction context</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">Agent's inherited token exploited for data access</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ No re-scoping means prompt injection = full data-tier access
+        </div>
+      </div>
+
+      <!-- VECTOR 2 -->
+      <div class="attack-column">
+        <h3>② NHI Sprawl &amp; Stale Credentials</h3>
+        <div class="tag">PERSISTENCE RISK</div>
+        <div class="node node-attacker">Attacker identifies stale agent identities</div>
+        <div class="arrow">↓</div>
+        <div class="node node-action">Long-lived tokens not rotated post-task</div>
+        <div class="arrow">↓</div>
+        <div class="node node-system">Dozens of credentials in unknown inventory</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-purple">Attacker reuses or rotates to valid token</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">Persistent exfil path — slow to detect &amp; revoke</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ Task context long since changed — credential scope remains broad
+        </div>
+      </div>
+
+      <!-- VECTOR 3 -->
+      <div class="attack-column">
+        <h3>③ Cross-Agent Credential Sharing</h3>
+        <div class="tag">HIGH RISK</div>
+        <div class="node node-attacker">Attacker compromises lowest-privilege agent</div>
+        <div class="arrow">↓</div>
+        <div class="node node-action">Shared credentials across agent mesh</div>
+        <div class="arrow">↓</div>
+        <div class="node node-system">No meaningful identity boundary between agents</div>
+        <div class="arrow purple">↓</div>
+        <div class="node node-purple">Lateral movement across orchestration layers</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">Vector store snapshots downloaded &amp; reconstructed</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ Secrets embedded in prompts/memory amplify blast radius
+        </div>
+      </div>
+
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- IMPACT -->
+    <div class="section-label">Resulting Impact</div>
+    <div class="impact-row">
+      <div class="impact-chip chip-red">🔓 Data Exfiltration<br><span style="font-weight:400;font-size:10.5px;">Embeddings · Prompts · Datasets</span></div>
+      <div class="impact-chip chip-amber">📋 Compliance Breach<br><span style="font-weight:400;font-size:10.5px;">GDPR · HIPAA · CCPA</span></div>
+      <div class="impact-chip chip-purple">🕵️ Sprawling IR<br><span style="font-weight:400;font-size:10.5px;">Unknown NHI inventory slows response</span></div>
+      <div class="impact-chip chip-blue">🏴 Reputational Damage<br><span style="font-weight:400;font-size:10.5px;">Reconstructed data surfaces externally</span></div>
+    </div>
+
+  </div><!-- /body -->
+
+  <div class="footer">CVE-2025-54795 · Hugging Face Spaces Token Exposure · ASI03 — Identity &amp; Privilege Abuse · OWASP GenAI Agentic Top 10</div>
+</div>
+</body>
+</html>

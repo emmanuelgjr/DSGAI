@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSGAI20 — Model Exfiltration & IP Replication: Attack Path</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: #f0f4f8;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 24px;
+    min-height: 100vh;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.13);
+    width: 880px;
+    max-width: 100%;
+  }
+
+  .header {
+    background: #0f1420;
+    color: #fff;
+    padding: 28px 36px 22px;
+    text-align: center;
+  }
+  .header .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: #60a5fa;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .header h1 { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+  .header p  { font-size: 13px; color: #90a8d8; font-weight: 400; }
+
+  .body { padding: 32px 36px 28px; display: flex; flex-direction: column; gap: 0; }
+
+  .section-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: #6b7a99; margin-bottom: 10px; padding-left: 2px;
+  }
+
+  /* node colours */
+  .node-attacker { background:#fff0f0; border-color:#e05c5c; color:#c0392b; }
+  .node-action   { background:#fff8ec; border-color:#f0a830; color:#7a4f00; }
+  .node-model    { background:#eaf2ff; border-color:#60a5fa; color:#1a3a7a; }
+  .node-stolen   { background:#fdf5ff; border-color:#c060d0; color:#5a0a6a; }
+  .node-leak     { background:#ffeaea; border-color:#e05c5c; color:#7a1a1a; }
+  .node-gap      { background:#fff0f0; border-color:#e05c5c; color:#7a1a1a; }
+  .node-warn     { background:#fffbe6; border-color:#d4a000; color:#5a3e00; }
+  .node-ok       { background:#f0fff4; border-color:#27ae60; color:#145a32; }
+
+  .divider { height: 1px; background: #e4eaf4; margin: 0 0 20px; }
+
+  /* ── MAIN FLOW ── */
+  .main-flow {
+    display: flex; align-items: center; gap: 0;
+    margin-bottom: 20px; background: #f7f9fc;
+    border: 1.5px solid #d8e2f0; border-radius: 12px;
+    padding: 16px 18px; overflow-x: auto;
+  }
+  .flow-step { flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; min-width:108px; }
+  .flow-box {
+    border-radius:8px; padding:9px 10px; font-size:12px;
+    font-weight:600; text-align:center; line-height:1.3; width:100%; border:1.5px solid;
+  }
+  .flow-sub { font-size:10px; color:#8896b0; text-align:center; font-weight:400; line-height:1.3; max-width:115px; }
+  .flow-arr { font-size:20px; color:#aab5cc; flex-shrink:0; padding:0 4px; margin-bottom:20px; }
+  .flow-arr.red   { color:#e05c5c; }
+  .flow-arr.amber { color:#f0a830; }
+  .flow-arr.blue  { color:#60a5fa; }
+
+  /* ── DISTILLATION PIPELINE VISUAL ── */
+  .distill-section {
+    background: #f7f9fc;
+    border: 1.5px solid #d8e2f0;
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+  }
+  .distill-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: #6b7a99; margin-bottom: 14px; text-align: center;
+  }
+
+  /* teacher → harvest → student */
+  .distill-layout {
+    display: grid;
+    grid-template-columns: 1fr 32px 1fr 32px 1fr;
+    align-items: center;
+    gap: 0;
+  }
+
+  .d-col { display: flex; flex-direction: column; gap: 7px; }
+  .d-box {
+    border-radius: 8px; padding: 10px 10px; font-size: 11.5px;
+    font-weight: 600; text-align: center; line-height: 1.3; border: 1.5px solid;
+  }
+  .d-arr { font-size: 22px; text-align: center; }
+  .d-arr.blue  { color: #60a5fa; }
+  .d-arr.red   { color: #e05c5c; }
+
+  .d-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px; text-align: center; border-radius: 4px;
+    padding: 2px 7px; font-weight: 700; align-self: center;
+    display: inline-block;
+  }
+  .lbl-ok     { background:#dbeafe; color:#1a3a7a; border:1px solid #60a5fa; }
+  .lbl-stolen { background:#f0e8ff; color:#5a0a8a; border:1px solid #c060d0; }
+  .lbl-bad    { background:#ffd4d4; color:#7a1a1a; border:1px solid #e05c5c; }
+
+  /* prompt samples box */
+  .prompt-harvest {
+    border: 2px solid #f0a830;
+    border-radius: 10px;
+    background: #fffdf0;
+    padding: 12px;
+  }
+  .ph-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: #7a4f00; margin-bottom: 8px; text-align: center;
+  }
+  .ph-entry {
+    border-radius: 6px; padding: 5px 8px; font-size: 10px;
+    font-weight: 600; border: 1.5px solid; margin-bottom: 4px;
+    font-family: 'IBM Plex Mono', monospace; line-height: 1.4;
+  }
+  .ph-1 { background:#fff0f0; border-color:#e05c5c; color:#7a1a1a; }
+  .ph-2 { background:#fff8ec; border-color:#f0a830; color:#7a4f00; }
+  .ph-count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; font-weight: 700; text-align: center;
+    color: #e05c5c; margin-top: 4px;
+  }
+
+  /* cost comparison */
+  .cost-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .cost-card {
+    border-radius: 8px; border: 1.5px solid; padding: 10px 12px;
+    text-align: center;
+  }
+  .cc-real   { background:#eaf2ff; border-color:#60a5fa; }
+  .cc-stolen { background:#fdf5ff; border-color:#c060d0; }
+  .cc-label  { font-size:11px; font-weight:700; margin-bottom:4px; }
+  .cc-real   .cc-label { color:#1a3a7a; }
+  .cc-stolen .cc-label { color:#5a0a6a; }
+  .cc-stat   { font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:700; }
+  .cc-real   .cc-stat  { color:#60a5fa; }
+  .cc-stolen .cc-stat  { color:#c060d0; }
+  .cc-sub    { font-size:10px; color:#888; margin-top:2px; }
+
+  /* ── COLUMNS ── */
+  .columns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+  .attack-column { background:#f7f9fc; border:1.5px solid #d8e2f0; border-radius:10px; padding:16px 14px; }
+  .attack-column h3 {
+    font-size:11px; font-weight:700; text-transform:uppercase;
+    letter-spacing:1.2px; color:#6b7a99; margin-bottom:12px; text-align:center;
+  }
+  .node {
+    border-radius:8px; padding:9px 12px; font-size:12px;
+    font-weight:600; line-height:1.35; text-align:center;
+    margin-bottom:6px; border:1.5px solid;
+  }
+  .arrow { display:flex; justify-content:center; align-items:center; height:22px; color:#aab5cc; font-size:18px; line-height:1; }
+  .arrow.red   { color:#e05c5c; }
+  .arrow.amber { color:#f0a830; }
+  .arrow.blue  { color:#60a5fa; }
+
+  .tag {
+    display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:9.5px;
+    background:#0f1420; color:#60a5fa; border-radius:4px;
+    padding:1px 6px; margin-bottom:4px; letter-spacing:0.5px;
+  }
+
+  /* ── IMPACT ROW ── */
+  .impact-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px; }
+  .impact-chip {
+    border-radius:8px; padding:9px 10px; font-size:11.5px;
+    font-weight:600; text-align:center; line-height:1.3; border:1.5px solid;
+  }
+  .chip-red    { background:#fff0f0; border-color:#e05c5c; color:#c0392b; }
+  .chip-amber  { background:#fff8ec; border-color:#f0a830; color:#7a4f00; }
+  .chip-purple { background:#fdf5ff; border-color:#c060d0; color:#5a0a6a; }
+  .chip-blue   { background:#eaf2ff; border-color:#60a5fa; color:#1a3a7a; }
+
+  .footer {
+    background:#0f1420; color:#90a8d8; font-size:11px;
+    text-align:center; padding:11px 20px; letter-spacing:0.3px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="label">DSGAI20 · Attack Path</div>
+    <h1>Model Exfiltration &amp; IP Replication</h1>
+    <p>Systematic API probing harvests input/output pairs to train a derivative "student" model — no weights stolen</p>
+  </div>
+
+  <div class="body">
+
+    <!-- PRIMARY FLOW -->
+    <div class="section-label">Primary Attack Flow — Model Extraction Attack (MEA)</div>
+    <div class="main-flow">
+      <div class="flow-step">
+        <div class="flow-box node-attacker">🎯 Attacker with Legitimate API Access</div>
+        <div class="flow-sub">No need to steal weights or training data directly</div>
+      </div>
+      <div class="flow-arr blue">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-action">100,000+ Systematic Probe Queries</div>
+        <div class="flow-sub">Chain-of-thought coercion · reasoning trace harvesting</div>
+      </div>
+      <div class="flow-arr amber">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-model">Teacher Model Responds at Scale</div>
+        <div class="flow-sub">No rate limits or behavioral detection — full reasoning exposed</div>
+      </div>
+      <div class="flow-arr amber">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-warn">Input/Output Pairs Harvested</div>
+        <div class="flow-sub">Knowledge distillation dataset assembled from API responses</div>
+      </div>
+      <div class="flow-arr red">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-stolen">💥 Student Model Trained</div>
+        <div class="flow-sub">Proprietary reasoning replicated at a fraction of the cost</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- DISTILLATION PIPELINE VISUAL -->
+    <div class="distill-section">
+      <div class="distill-title">Knowledge Distillation Attack — Teacher → Harvest → Student</div>
+
+      <div class="distill-layout">
+
+        <!-- TEACHER -->
+        <div class="d-col">
+          <div class="d-box node-model">🏛 Proprietary Teacher Model<br><span style="font-size:10px;font-weight:400;">Years of training · RLHF · proprietary data · reasoning logic</span></div>
+          <div class="d-label lbl-ok">HIGH-VALUE IP</div>
+          <div class="d-box node-model">API exposed to customers<br><span style="font-size:10px;font-weight:400;">Legitimate access — no distillation controls</span></div>
+        </div>
+
+        <div class="d-arr blue" style="text-align:center;">→<br><span style="font-size:9px;color:#f0a830;font-family:'IBM Plex Mono',monospace;">100K+<br>PROBES</span></div>
+
+        <!-- HARVEST -->
+        <div class="prompt-harvest">
+          <div class="ph-label">📦 Harvested I/O Dataset</div>
+          <div class="ph-entry ph-1">prompt: "Explain your step-by-step reasoning for..."<br>response: "&lt;think&gt;First I consider...&lt;/think&gt; Answer: ..."</div>
+          <div class="ph-entry ph-2">prompt: "What would you conclude if given X?"<br>response: "&lt;think&gt;The key factors are...&lt;/think&gt;..."</div>
+          <div class="ph-entry ph-1">prompt: "Walk through your internal logic for..."<br>response: "Chain-of-thought: Step 1... Step 2..."</div>
+          <div class="ph-count">× 100,000+ pairs — reasoning traces captured</div>
+        </div>
+
+        <div class="d-arr red" style="text-align:center;">→<br><span style="font-size:9px;color:#e05c5c;font-family:'IBM Plex Mono',monospace;">DISTIL<br>TRAIN</span></div>
+
+        <!-- STUDENT -->
+        <div class="d-col">
+          <div class="d-box node-stolen">🪄 Student Model<br><span style="font-size:10px;font-weight:400;">Trained on harvested pairs — replicates teacher reasoning</span></div>
+          <div class="d-label lbl-bad">STOLEN IP</div>
+          <div class="d-box node-leak">Deployed by attacker<br><span style="font-size:10px;font-weight:400;">Competitor product · cost: fraction of original</span></div>
+        </div>
+
+      </div>
+
+      <!-- COST COMPARISON -->
+      <div class="cost-bar">
+        <div class="cost-card cc-real">
+          <div class="cc-label">Original Model Development Cost</div>
+          <div class="cc-stat">$10M – $100M+</div>
+          <div class="cc-sub">Training compute · data curation · RLHF · years of R&amp;D</div>
+        </div>
+        <div class="cost-card cc-stolen">
+          <div class="cc-label">Distillation Attack Cost</div>
+          <div class="cc-stat">~$0.01 per query</div>
+          <div class="cc-sub">API query cost only · 100K queries · reasoning logic replicated</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- THREE ATTACK VECTORS -->
+    <div class="section-label">Attack Vectors</div>
+    <div class="columns">
+
+      <!-- VECTOR 1 -->
+      <div class="attack-column">
+        <h3>① Chain-of-Thought Coercion</h3>
+        <div class="tag">REASONING TRACE HARVEST</div>
+        <div class="node node-attacker">Attacker opens legitimate API subscription</div>
+        <div class="arrow blue">↓</div>
+        <div class="node node-action">Crafts prompts coercing model to output full internal reasoning: "Show step-by-step thinking"</div>
+        <div class="arrow">↓</div>
+        <div class="node node-model">Model exposes chain-of-thought traces not visible in normal use</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-warn">100K+ reasoning traces harvested — no rate limit or similarity detection</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-stolen">Student model trained on traces replicates proprietary reasoning logic — Google Cloud / Anthropic incidents Feb 2026</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ CoT output was a product feature — also the primary exfiltration surface
+        </div>
+      </div>
+
+      <!-- VECTOR 2 -->
+      <div class="attack-column">
+        <h3>② Systematic Capability Probing</h3>
+        <div class="tag">KNOWLEDGE DISTILLATION</div>
+        <div class="node node-attacker">Competitor launches automated campaign via multiple API keys</div>
+        <div class="arrow blue">↓</div>
+        <div class="node node-action">Structured prompt sweeps across task domains — high-cardinality variation, stable instruction template</div>
+        <div class="arrow">↓</div>
+        <div class="node node-warn">Output similarity clustering across sessions undetected — no behavioral analytics</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-action">Dataset covers model's full capability surface across reasoning, coding, analysis</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-stolen">Derivative product launched — core capabilities replicated at &lt;1% of original training cost</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ No single API key crosses rate limit — campaign distributed across accounts
+        </div>
+      </div>
+
+      <!-- VECTOR 3 -->
+      <div class="attack-column">
+        <h3>③ Fine-tuned Adapter Extraction</h3>
+        <div class="tag">IP REPLICATION</div>
+        <div class="node node-attacker">Attacker targets domain-specific fine-tuned deployment</div>
+        <div class="arrow blue">↓</div>
+        <div class="node node-action">Probes specialized endpoints — legal, medical, financial reasoning</div>
+        <div class="arrow">↓</div>
+        <div class="node node-model">Fine-tuned behavior harvested via targeted I/O pairs</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-warn">Adapter-specific reasoning replicated — no watermark in outputs</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-stolen">Specialized competitor model deployed — domain fine-tuning investment stolen without adapter access</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ No output watermarking — stolen logic untraceable back to source API session
+        </div>
+      </div>
+
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- IMPACT -->
+    <div class="section-label">Resulting Impact</div>
+    <div class="impact-row">
+      <div class="impact-chip chip-red">🏛 IP Theft<br><span style="font-weight:400;font-size:10.5px;">Training investment replicated at fraction of cost</span></div>
+      <div class="impact-chip chip-purple">📉 Competitive Advantage Lost<br><span style="font-weight:400;font-size:10.5px;">Core capabilities cloned by competitors or adversaries</span></div>
+      <div class="impact-chip chip-amber">⚡ Accelerated Adversary Development<br><span style="font-weight:400;font-size:10.5px;">Months of R&amp;D replicated via API queries</span></div>
+      <div class="impact-chip chip-blue">🔍 Untraceable Without Watermarking<br><span style="font-weight:400;font-size:10.5px;">No evidence linking student model to source API</span></div>
+    </div>
+
+  </div><!-- /body -->
+
+  <div class="footer">Model Extraction Attack (MEA) · Knowledge Distillation · Google Cloud Blog Feb 2026 · Anthropic Announcements Feb 2026 · Cross-ref: DSGAI18 Inference · DSGAI02 Credentials</div>
+</div>
+</body>
+</html>

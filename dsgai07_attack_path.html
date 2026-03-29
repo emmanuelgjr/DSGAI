@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSGAI07 — Data Governance, Lifecycle & Classification: Attack Path</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: #f0f4f8;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 24px;
+    min-height: 100vh;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.13);
+    width: 880px;
+    max-width: 100%;
+  }
+
+  .header {
+    background: #1a1f2e;
+    color: #fff;
+    padding: 28px 36px 22px;
+    text-align: center;
+  }
+  .header .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: #64d8a0;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .header h1 { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+  .header p  { font-size: 13px; color: #98c8b0; font-weight: 400; }
+
+  .body { padding: 32px 36px 28px; display: flex; flex-direction: column; gap: 0; }
+
+  .section-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: #6b7a99; margin-bottom: 10px; padding-left: 2px;
+  }
+
+  /* node colours */
+  .node-source   { background:#eaf2ff; border-color:#5b8dee; color:#1a3a7a; }
+  .node-action   { background:#fff8ec; border-color:#f0a830; color:#7a4f00; }
+  .node-derived  { background:#f0fff8; border-color:#64d8a0; color:#0a4a2a; }
+  .node-gap      { background:#fff0f0; border-color:#e05c5c; color:#7a1a1a; }
+  .node-leak     { background:#ffeaea; border-color:#e05c5c; color:#7a1a1a; }
+  .node-gray     { background:#f3f4f6; border-color:#c4c9d4; color:#4a5568; }
+  .node-warn     { background:#fffbe6; border-color:#d4a000; color:#5a3e00; }
+
+  .divider { height: 1px; background: #e4eaf4; margin: 0 0 20px; }
+
+  /* ── MAIN FLOW ── */
+  .main-flow {
+    display: flex; align-items: center; gap: 0;
+    margin-bottom: 20px; background: #f7f9fc;
+    border: 1.5px solid #d8e2f0; border-radius: 12px;
+    padding: 16px 18px; overflow-x: auto;
+  }
+  .flow-step { flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; min-width:108px; }
+  .flow-box {
+    border-radius:8px; padding:9px 10px; font-size:12px;
+    font-weight:600; text-align:center; line-height:1.3; width:100%; border:1.5px solid;
+  }
+  .flow-sub { font-size:10px; color:#8896b0; text-align:center; font-weight:400; line-height:1.3; max-width:115px; }
+  .flow-arr { font-size:20px; color:#aab5cc; flex-shrink:0; padding:0 4px; margin-bottom:20px; }
+  .flow-arr.red   { color:#e05c5c; }
+  .flow-arr.amber { color:#f0a830; }
+  .flow-arr.green { color:#64d8a0; }
+
+  /* ── 3-STAGE COMPOUNDING FAILURE ── */
+  .stages {
+    display: grid;
+    grid-template-columns: 1fr 24px 1fr 24px 1fr;
+    gap: 0;
+    margin-bottom: 20px;
+    align-items: start;
+  }
+  .stage-col {
+    background: #f7f9fc;
+    border: 1.5px solid #d8e2f0;
+    border-radius: 10px;
+    padding: 14px 14px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .stage-hdr {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+  }
+  .stage-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; font-weight: 700;
+    border-radius: 20px; padding: 2px 10px; white-space: nowrap;
+  }
+  .b1 { background:#eaf2ff; color:#1a3a7a; border:1.5px solid #5b8dee; }
+  .b2 { background:#fff8ec; color:#7a4f00; border:1.5px solid #f0a830; }
+  .b3 { background:#fff0f0; color:#7a1a1a; border:1.5px solid #e05c5c; }
+
+  .stage-title { font-size:11.5px; font-weight:700; color:#2d3748; line-height:1.2; }
+
+  .s-node {
+    border-radius:7px; padding:8px 10px; font-size:11.5px;
+    font-weight:600; line-height:1.3; text-align:center;
+    border:1.5px solid; margin-bottom:5px;
+  }
+  .s-arrow { display:flex; justify-content:center; align-items:center; height:20px; color:#aab5cc; font-size:16px; }
+  .s-arrow.red   { color:#e05c5c; }
+  .s-arrow.amber { color:#f0a830; }
+  .s-arrow.green { color:#64d8a0; }
+
+  .stage-sep {
+    display:flex; align-items:center; justify-content:center;
+    font-size:22px; color:#e05c5c; padding-top:55px;
+  }
+
+  /* ── PROPAGATION DIAGRAM ── */
+  .prop-section {
+    background: #f7f9fc;
+    border: 1.5px solid #d8e2f0;
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+  }
+  .prop-title {
+    font-size:11px; font-weight:700; text-transform:uppercase;
+    letter-spacing:1.2px; color:#6b7a99; margin-bottom:14px; text-align:center;
+  }
+  .prop-row {
+    display: grid;
+    grid-template-columns: 1fr 28px 1fr 28px 1fr 28px 1fr 28px 1fr;
+    align-items: center;
+    gap: 0;
+    width: 100%;
+  }
+  .prop-node {
+    border-radius:8px; padding:10px 8px; font-size:11px;
+    font-weight:600; text-align:center; line-height:1.3;
+    border:1.5px solid; width:100%;
+  }
+  .prop-arr {
+    font-size:18px; color:#f0a830; text-align:center;
+    line-height:1;
+  }
+  .prop-arr.red { color:#e05c5c; }
+
+  .prop-label {
+    font-family:'IBM Plex Mono',monospace;
+    font-size:9px; text-align:center; color:#888;
+    margin-top:5px; line-height:1.3;
+  }
+  .prop-col { display:flex; flex-direction:column; align-items:center; gap:0; }
+
+  /* ── COLUMNS ── */
+  .columns { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; margin-bottom:24px; }
+  .attack-column { background:#f7f9fc; border:1.5px solid #d8e2f0; border-radius:10px; padding:16px 14px; }
+  .attack-column h3 {
+    font-size:11px; font-weight:700; text-transform:uppercase;
+    letter-spacing:1.2px; color:#6b7a99; margin-bottom:12px; text-align:center;
+  }
+  .node {
+    border-radius:8px; padding:9px 12px; font-size:12px;
+    font-weight:600; line-height:1.35; text-align:center;
+    margin-bottom:6px; border:1.5px solid;
+  }
+  .arrow { display:flex; justify-content:center; align-items:center; height:22px; color:#aab5cc; font-size:18px; line-height:1; }
+  .arrow.red   { color:#e05c5c; }
+  .arrow.amber { color:#f0a830; }
+  .arrow.green { color:#64d8a0; }
+
+  .tag {
+    display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:9.5px;
+    background:#1a1f2e; color:#64d8a0; border-radius:4px;
+    padding:1px 6px; margin-bottom:4px; letter-spacing:0.5px;
+  }
+
+  /* ── IMPACT ROW ── */
+  .impact-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px; }
+  .impact-chip {
+    border-radius:8px; padding:9px 10px; font-size:11.5px;
+    font-weight:600; text-align:center; line-height:1.3; border:1.5px solid;
+  }
+  .chip-red    { background:#fff0f0; border-color:#e05c5c; color:#c0392b; }
+  .chip-amber  { background:#fff8ec; border-color:#f0a830; color:#7a4f00; }
+  .chip-green  { background:#f0fff8; border-color:#64d8a0; color:#0a4a2a; }
+  .chip-blue   { background:#eaf2ff; border-color:#5b8dee; color:#1a3a7a; }
+
+  .footer {
+    background:#1a1f2e; color:#98c8b0; font-size:11px;
+    text-align:center; padding:11px 20px; letter-spacing:0.3px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="label">DSGAI07 · Attack Path</div>
+    <h1>Data Governance, Lifecycle &amp; Classification</h1>
+    <p>How governance failures propagate into derived artifacts and make remediation impossible</p>
+  </div>
+
+  <div class="body">
+
+    <!-- PRIMARY FLOW -->
+    <div class="section-label">Primary Failure Flow</div>
+    <div class="main-flow">
+      <div class="flow-step">
+        <div class="flow-box node-source">Unclassified Data Ingested</div>
+        <div class="flow-sub">No PHI/PII label — passes ingestion gate unchecked</div>
+      </div>
+      <div class="flow-arr green">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-derived">Derived Artifacts Created</div>
+        <div class="flow-sub">Embeddings, fine-tune datasets, backups — no classification inherited</div>
+      </div>
+      <div class="flow-arr amber">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-action">Source Record Deleted</div>
+        <div class="flow-sub">DSR erasure request or retention schedule honored — but only at source</div>
+      </div>
+      <div class="flow-arr amber">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-warn">Derived Artifacts Persist</div>
+        <div class="flow-sub">Embeddings remain live · backups retain raw content · no lineage to trace</div>
+      </div>
+      <div class="flow-arr red">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-leak">💥 Erasure Violated</div>
+        <div class="flow-sub">Deleted data re-enters retrieval surface — cannot be scoped or remediated</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- 3-STAGE COMPOUNDING FAILURE -->
+    <div class="section-label">Three Compounding Failure Stages</div>
+    <div class="stages">
+
+      <!-- STAGE 1 -->
+      <div class="stage-col">
+        <div class="stage-hdr">
+          <div class="stage-badge b1">Stage 1</div>
+          <div class="stage-title">Data Enters Without Classification</div>
+        </div>
+        <div class="s-node node-source">CSV with patient notes ingested</div>
+        <div class="s-arrow">↓</div>
+        <div class="s-node node-action">No PHI label — no secret scanner at this pipeline stage</div>
+        <div class="s-arrow">↓</div>
+        <div class="s-node node-action">Conflicting sensitivity tags at dataset merge</div>
+        <div class="s-arrow green">↓</div>
+        <div class="s-node node-derived">Downstream controls gate on sensitivity tier — have nothing to act on</div>
+        <div class="s-arrow green">↓</div>
+        <div class="s-node node-warn">Data flows through uncontrolled</div>
+        <div style="font-size:10px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ Classification absent = training blockers, access scoping, retention enforcement all bypassed
+        </div>
+      </div>
+
+      <div class="stage-sep">→</div>
+
+      <!-- STAGE 2 -->
+      <div class="stage-col">
+        <div class="stage-hdr">
+          <div class="stage-badge b2">Stage 2</div>
+          <div class="stage-title">Lifecycle Obligations Not Applied to Derived Artifacts</div>
+        </div>
+        <div class="s-node node-action">DSR erasure request received — source record deleted ✓</div>
+        <div class="s-arrow">↓</div>
+        <div class="s-node node-warn">Embedding persists in vector store — not linked to source</div>
+        <div class="s-arrow">↓</div>
+        <div class="s-node node-warn">Fine-tuning run not inventoried — no source linkage</div>
+        <div class="s-arrow amber">↓</div>
+        <div class="s-node node-warn">Nightly backup retains raw content — not purged on schedule</div>
+        <div class="s-arrow red">↓</div>
+        <div class="s-node node-leak">Re-indexing job ingests backup — deleted record re-enters live retrieval</div>
+        <div style="font-size:10px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ Org believes erasure obligation honored — it has not been
+        </div>
+      </div>
+
+      <div class="stage-sep">→</div>
+
+      <!-- STAGE 3 -->
+      <div class="stage-col">
+        <div class="stage-hdr">
+          <div class="stage-badge b3">Stage 3</div>
+          <div class="stage-title">Lineage Gaps Make Remediation Impossible</div>
+        </div>
+        <div class="s-node node-gap">Regulator requests proof of consent for fine-tuning dataset</div>
+        <div class="s-arrow">↓</div>
+        <div class="s-node node-gap">No artifact linking training run to dataset version</div>
+        <div class="s-arrow">↓</div>
+        <div class="s-node node-gap">No consent records mapping to specific training records</div>
+        <div class="s-arrow red">↓</div>
+        <div class="s-node node-gap">Cannot scope blast radius of compromised data source</div>
+        <div class="s-arrow red">↓</div>
+        <div class="s-node node-leak">Cannot prove compliance · Cannot execute targeted remediation · Cannot honor erasure at weight level</div>
+        <div style="font-size:10px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ Machine unlearning cannot be scoped without data-to-model lineage
+        </div>
+      </div>
+
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- PROPAGATION DIAGRAM -->
+    <div class="prop-section">
+      <div class="prop-title">Classification Propagation Failure — Where Governance Stops vs. Where Data Goes</div>
+      <div class="prop-row">
+
+        <div class="prop-col">
+          <div class="prop-node node-source">Source Record<br><span style="font-size:10px;font-weight:400;">PHI label applied ✓</span></div>
+          <div class="prop-label">CLASSIFICATION<br>STOPS HERE</div>
+        </div>
+
+        <div class="prop-arr" style="text-align:center;">→</div>
+
+        <div class="prop-col">
+          <div class="prop-node node-warn">Embeddings<br><span style="font-size:10px;font-weight:400;">No label inherited ✗</span></div>
+          <div class="prop-label">UNCONTROLLED</div>
+        </div>
+
+        <div class="prop-arr" style="text-align:center;">→</div>
+
+        <div class="prop-col">
+          <div class="prop-node node-warn">Fine-tune Dataset<br><span style="font-size:10px;font-weight:400;">No label · No lineage ✗</span></div>
+          <div class="prop-label">UNCONTROLLED</div>
+        </div>
+
+        <div class="prop-arr" style="text-align:center;">→</div>
+
+        <div class="prop-col">
+          <div class="prop-node node-warn">Model Weights<br><span style="font-size:10px;font-weight:400;">PHI memorized · No tag ✗</span></div>
+          <div class="prop-label">UNCONTROLLED</div>
+        </div>
+
+        <div class="prop-arr red" style="text-align:center;">→</div>
+
+        <div class="prop-col">
+          <div class="prop-node node-leak">Backups &amp; Logs<br><span style="font-size:10px;font-weight:400;">Retained indefinitely ✗</span></div>
+          <div class="prop-label">ERASURE IMPOSSIBLE</div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- IMPACT -->
+    <div class="section-label">Resulting Impact</div>
+    <div class="impact-row">
+      <div class="impact-chip chip-red">📋 DSR Erasure Violated<br><span style="font-weight:400;font-size:10.5px;">Derived artifacts persist after source deletion</span></div>
+      <div class="impact-chip chip-amber">⚖️ Regulatory Exposure<br><span style="font-weight:400;font-size:10.5px;">Lineage gaps prevent proof of lawful basis</span></div>
+      <div class="impact-chip chip-green">🔍 Remediation Impossible<br><span style="font-weight:400;font-size:10.5px;">Cannot scope incident blast radius without lineage</span></div>
+      <div class="impact-chip chip-blue">🔄 Data Resurrection<br><span style="font-weight:400;font-size:10.5px;">Deleted records re-enter retrieval via backup re-index</span></div>
+    </div>
+
+  </div><!-- /body -->
+
+  <div class="footer">No CVE — Governance &amp; Pipeline Architecture Failure Class · GDPR Art. 17 Right to Erasure · DSGAI01 Machine Unlearning · OWASP GenAI Security Project</div>
+</div>
+</body>
+</html>

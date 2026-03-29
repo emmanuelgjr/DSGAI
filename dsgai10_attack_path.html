@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSGAI10 — Synthetic Data, Anonymization & Transformation Pitfalls: Attack Path</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: #f0f4f8;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 24px;
+    min-height: 100vh;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.13);
+    width: 880px;
+    max-width: 100%;
+  }
+
+  .header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 28px 36px 22px;
+    text-align: center;
+  }
+  .header .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: #e8a838;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .header h1 { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+  .header p  { font-size: 13px; color: #c8b880; font-weight: 400; }
+
+  .body { padding: 32px 36px 28px; display: flex; flex-direction: column; gap: 0; }
+
+  .section-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: #6b7a99; margin-bottom: 10px; padding-left: 2px;
+  }
+
+  /* node colours */
+  .node-safe   { background:#f0fff4; border-color:#27ae60; color:#145a32; }
+  .node-action { background:#fff8ec; border-color:#f0a830; color:#7a4f00; }
+  .node-system { background:#eaf2ff; border-color:#5b8dee; color:#1a3a7a; }
+  .node-leak   { background:#ffeaea; border-color:#e05c5c; color:#7a1a1a; }
+  .node-gap    { background:#fff0f0; border-color:#e05c5c; color:#7a1a1a; }
+  .node-warn   { background:#fffbe6; border-color:#d4a000; color:#5a3e00; }
+  .node-synth  { background:#f5f0ff; border-color:#a855f7; color:#5a0a8a; }
+
+  .divider { height: 1px; background: #e4eaf4; margin: 0 0 20px; }
+
+  /* ── MAIN FLOW ── */
+  .main-flow {
+    display: flex; align-items: center; gap: 0;
+    margin-bottom: 20px; background: #f7f9fc;
+    border: 1.5px solid #d8e2f0; border-radius: 12px;
+    padding: 16px 18px; overflow-x: auto;
+  }
+  .flow-step { flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; min-width:108px; }
+  .flow-box {
+    border-radius:8px; padding:9px 10px; font-size:12px;
+    font-weight:600; text-align:center; line-height:1.3; width:100%; border:1.5px solid;
+  }
+  .flow-sub { font-size:10px; color:#8896b0; text-align:center; font-weight:400; line-height:1.3; max-width:115px; }
+  .flow-arr { font-size:20px; color:#aab5cc; flex-shrink:0; padding:0 4px; margin-bottom:20px; }
+  .flow-arr.red    { color:#e05c5c; }
+  .flow-arr.amber  { color:#f0a830; }
+  .flow-arr.purple { color:#a855f7; }
+
+  /* ── FALSE GUARANTEE VISUAL ── */
+  .false-section {
+    background: #f7f9fc;
+    border: 1.5px solid #d8e2f0;
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+  }
+  .false-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: #6b7a99; margin-bottom: 14px; text-align: center;
+  }
+  .false-grid {
+    display: grid;
+    grid-template-columns: 1fr 36px 1fr 36px 1fr;
+    align-items: center;
+    gap: 0;
+  }
+  .fg-col { display: flex; flex-direction: column; gap: 6px; }
+  .fg-box {
+    border-radius: 8px; padding: 10px 10px; font-size: 11.5px;
+    font-weight: 600; text-align: center; line-height: 1.3; border: 1.5px solid;
+  }
+  .fg-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9.5px; text-align: center; border-radius: 4px;
+    padding: 2px 7px; font-weight: 700;
+  }
+  .lbl-ok     { background:#d4f5e4; color:#145a32; border:1px solid #27ae60; }
+  .lbl-false  { background:#ffd4d4; color:#7a1a1a; border:1px solid #e05c5c; }
+  .lbl-risk   { background:#fff3cd; color:#7a4f00; border:1px solid #d4a000; }
+
+  .fg-arr {
+    font-size: 22px; text-align: center; font-weight: 700;
+  }
+  .fg-arr.amber { color: #f0a830; }
+  .fg-arr.red   { color: #e05c5c; }
+
+  /* ── COLUMNS ── */
+  .columns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+  .attack-column { background:#f7f9fc; border:1.5px solid #d8e2f0; border-radius:10px; padding:16px 14px; }
+  .attack-column h3 {
+    font-size:11px; font-weight:700; text-transform:uppercase;
+    letter-spacing:1.2px; color:#6b7a99; margin-bottom:12px; text-align:center;
+  }
+  .node {
+    border-radius:8px; padding:9px 12px; font-size:12px;
+    font-weight:600; line-height:1.35; text-align:center;
+    margin-bottom:6px; border:1.5px solid;
+  }
+  .arrow { display:flex; justify-content:center; align-items:center; height:22px; color:#aab5cc; font-size:18px; line-height:1; }
+  .arrow.red    { color:#e05c5c; }
+  .arrow.amber  { color:#f0a830; }
+  .arrow.purple { color:#a855f7; }
+
+  .tag {
+    display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:9.5px;
+    background:#1a1a2e; color:#e8a838; border-radius:4px;
+    padding:1px 6px; margin-bottom:4px; letter-spacing:0.5px;
+  }
+
+  /* ── QUASI-ID VISUAL ── */
+  .quasi-section {
+    background: #fffdf0;
+    border: 1.5px solid #d4a000;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+  }
+  .quasi-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: #7a4f00; margin-bottom: 12px; text-align: center;
+  }
+  .quasi-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    align-items: center;
+  }
+  .quasi-field {
+    border-radius: 7px; padding: 8px 8px; font-size: 11px;
+    font-weight: 600; text-align: center; line-height: 1.3; border: 1.5px solid;
+  }
+  .qf-removed { background:#f0fff4; border-color:#27ae60; color:#145a32; }
+  .qf-kept    { background:#fff0f0; border-color:#e05c5c; color:#7a1a1a; }
+  .quasi-plus { font-size:18px; color:#d4a000; text-align:center; font-weight:700; }
+  .quasi-sub  { font-size:9.5px; text-align:center; margin-top:3px; font-family:'IBM Plex Mono',monospace; }
+  .qs-ok   { color:#27ae60; }
+  .qs-fail { color:#e05c5c; }
+  .quasi-col { display:flex; flex-direction:column; align-items:center; }
+
+  /* ── IMPACT ROW ── */
+  .impact-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px; }
+  .impact-chip {
+    border-radius:8px; padding:9px 10px; font-size:11.5px;
+    font-weight:600; text-align:center; line-height:1.3; border:1.5px solid;
+  }
+  .chip-red    { background:#fff0f0; border-color:#e05c5c; color:#c0392b; }
+  .chip-amber  { background:#fff8ec; border-color:#f0a830; color:#7a4f00; }
+  .chip-purple { background:#f5f0ff; border-color:#a855f7; color:#5a0a8a; }
+  .chip-blue   { background:#eaf2ff; border-color:#5b8dee; color:#1a3a7a; }
+
+  .footer {
+    background:#1a1a2e; color:#c8b880; font-size:11px;
+    text-align:center; padding:11px 20px; letter-spacing:0.3px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="label">DSGAI10 · Attack Path</div>
+    <h1>Synthetic Data, Anonymization &amp; Transformation Pitfalls</h1>
+    <p>Transformation produces an assumed privacy guarantee that does not actually exist</p>
+  </div>
+
+  <div class="body">
+
+    <!-- PRIMARY FLOW -->
+    <div class="section-label">Primary Attack Flow</div>
+    <div class="main-flow">
+      <div class="flow-step">
+        <div class="flow-box node-safe">✓ De-identified Dataset</div>
+        <div class="flow-sub">Direct identifiers removed — org believes data is safe to use</div>
+      </div>
+      <div class="flow-arr purple">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-synth">Fine-tuned or Synthetic Model</div>
+        <div class="flow-sub">Rare records memorized during gradient updates</div>
+      </div>
+      <div class="flow-arr amber">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-warn">Shared More Broadly Than Source</div>
+        <div class="flow-sub">Synthetic data published / given to research partners at lower scrutiny</div>
+      </div>
+      <div class="flow-arr amber">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-gap">Membership Inference / Linkage Attack</div>
+        <div class="flow-sub">Attacker confirms individual presence in training data with &gt;0.9 accuracy</div>
+      </div>
+      <div class="flow-arr red">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-leak">💥 Re-identification</div>
+        <div class="flow-sub">Individuals recovered from data believed to be anonymized</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- FALSE GUARANTEE VISUAL -->
+    <div class="false-section">
+      <div class="false-title">The False Anonymity Chain — What Teams Believe vs. What the Model Preserves</div>
+      <div class="false-grid">
+
+        <div class="fg-col">
+          <div class="fg-box node-safe">Raw Dataset<br><span style="font-size:10px;font-weight:400;">Age · ZIP · Diagnosis · Name · DOB</span></div>
+          <div class="fg-label lbl-ok">CONTROLLED ✓</div>
+        </div>
+
+        <div class="fg-arr amber" style="text-align:center;">→</div>
+
+        <div class="fg-col">
+          <div class="fg-box node-synth">De-identified / Synthetic Dataset<br><span style="font-size:10px;font-weight:400;">Name &amp; DOB stripped — age band + ZIP retained</span></div>
+          <div class="fg-label lbl-false">ASSUMED SAFE ✗</div>
+        </div>
+
+        <div class="fg-arr red" style="text-align:center;">→</div>
+
+        <div class="fg-col">
+          <div class="fg-box node-gap">Fine-tuned Model Weights<br><span style="font-size:10px;font-weight:400;">Rare quasi-ID combinations memorized — extractable</span></div>
+          <div class="fg-label lbl-risk">RE-ID RISK ⚠</div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- QUASI-IDENTIFIER VISUAL -->
+    <div class="quasi-section">
+      <div class="quasi-title">Quasi-Identifier Combination — How Re-Identification Works Without Direct Identifiers</div>
+      <div class="quasi-row">
+
+        <div class="quasi-col">
+          <div class="quasi-field qf-removed">Name<br><span style="font-weight:400;font-size:10px;">REMOVED</span></div>
+          <div class="quasi-sub qs-ok">✓ stripped</div>
+        </div>
+        <div class="quasi-plus">+</div>
+        <div class="quasi-col">
+          <div class="quasi-field qf-kept">Age Band<br><span style="font-weight:400;font-size:10px;">RETAINED</span></div>
+          <div class="quasi-sub qs-fail">✗ quasi-ID</div>
+        </div>
+        <div class="quasi-plus">+</div>
+        <div class="quasi-col">
+          <div class="quasi-field qf-kept">3-digit ZIP<br><span style="font-weight:400;font-size:10px;">RETAINED</span></div>
+          <div class="quasi-sub qs-fail">✗ quasi-ID</div>
+        </div>
+        <div class="quasi-plus">+</div>
+        <div class="quasi-col">
+          <div class="quasi-field qf-kept">Rare Diagnosis<br><span style="font-weight:400;font-size:10px;">RETAINED</span></div>
+          <div class="quasi-sub qs-fail">✗ quasi-ID</div>
+        </div>
+        <div class="quasi-plus">=</div>
+        <div class="quasi-col">
+          <div class="quasi-field" style="background:#ffeaea;border-color:#e05c5c;color:#7a1a1a;">Unique Individual<br><span style="font-weight:400;font-size:10px;">Re-identifiable via public records</span></div>
+          <div class="quasi-sub qs-fail">✗ re-ID possible</div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- THREE ATTACK VECTORS -->
+    <div class="section-label">Attack Vectors</div>
+    <div class="columns">
+
+      <!-- VECTOR 1 -->
+      <div class="attack-column">
+        <h3>① De-identification Reversal</h3>
+        <div class="tag">MEMBERSHIP INFERENCE</div>
+        <div class="node node-safe">Healthcare provider applies de-ID — strips direct identifiers ✓</div>
+        <div class="arrow purple">↓</div>
+        <div class="node node-synth">Fine-tunes model on dataset retaining age + ZIP + diagnosis</div>
+        <div class="arrow">↓</div>
+        <div class="node node-warn">Rare records memorized with disproportionate weight in gradient updates</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-gap">Attacker applies membership inference (SaTML 2026) — &gt;0.9 accuracy</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">Specific patient's presence confirmed — record reconstructed via extraction</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ De-ID applied to raw data — model re-created the risk during training
+        </div>
+      </div>
+
+      <!-- VECTOR 2 -->
+      <div class="attack-column">
+        <h3>② Synthetic Data False Anonymity</h3>
+        <div class="tag">LINKAGE ATTACK</div>
+        <div class="node node-safe">Team generates synthetic dataset from real corpus ✓</div>
+        <div class="arrow purple">↓</div>
+        <div class="node node-synth">Generative model memorizes rare records &amp; preserves statistical structure</div>
+        <div class="arrow">↓</div>
+        <div class="node node-warn">Synthetic data shared with research partners at far lower scrutiny than source</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-gap">Third party applies linkage attack — quasi-IDs joined against public records</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">Individuals recovered from source population — false sense of security was risk amplifier</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ MI accuracy &gt;0.9 demonstrated against partially synthetic health data
+        </div>
+      </div>
+
+      <!-- VECTOR 3 -->
+      <div class="attack-column">
+        <h3>③ Transformation Pipeline Errors</h3>
+        <div class="tag">SILENT CORRUPTION</div>
+        <div class="node node-system">Data passes through preprocessing pipeline</div>
+        <div class="arrow">↓</div>
+        <div class="node node-warn">Unicode normalization quirk causes tokenization artifact</div>
+        <div class="arrow">↓</div>
+        <div class="node node-warn">Schema drift silently corrupts features — no drift alert configured</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-gap">Defect propagates into training run undetected — no property tests</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">Model bias or brittleness introduced — underlying data structure revealed via artifact patterns</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ Transformation errors are not recognized as security issues — no security review applied
+        </div>
+      </div>
+
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- IMPACT -->
+    <div class="section-label">Resulting Impact</div>
+    <div class="impact-row">
+      <div class="impact-chip chip-red">👤 Individual Re-identification<br><span style="font-weight:400;font-size:10.5px;">Patients &amp; customers recovered from "anonymized" data</span></div>
+      <div class="impact-chip chip-purple">🔬 False Security Amplifies Exposure<br><span style="font-weight:400;font-size:10.5px;">Synthetic data shared more broadly than source would be</span></div>
+      <div class="impact-chip chip-amber">⚖️ Regulatory Exposure<br><span style="font-weight:400;font-size:10.5px;">GDPR / HIPAA — synthetic may still constitute personal data</span></div>
+      <div class="impact-chip chip-blue">🧬 Bias Amplification<br><span style="font-weight:400;font-size:10.5px;">Synthetic bias &amp; transformation errors degrade model integrity</span></div>
+    </div>
+
+  </div><!-- /body -->
+
+  <div class="footer">No CVE — Privacy Design &amp; ML Architecture Failure · Narayanan &amp; Shmatikoff (Netflix 2006) · SaTML 2026 MI Methodology · GDPR Art. 4(1) · HIPAA Safe Harbor · Cross-ref: DSGAI01, DSGAI07</div>
+</div>
+</body>
+</html>

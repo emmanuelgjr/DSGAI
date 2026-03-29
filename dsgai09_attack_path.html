@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSGAI09 — Multimodal Capture & Cross-Channel Data Leakage: Attack Path</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: #f0f4f8;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 24px;
+    min-height: 100vh;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.13);
+    width: 880px;
+    max-width: 100%;
+  }
+
+  .header {
+    background: #0e1f2a;
+    color: #fff;
+    padding: 28px 36px 22px;
+    text-align: center;
+  }
+  .header .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: #38bdf8;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .header h1 { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+  .header p  { font-size: 13px; color: #90c8e0; font-weight: 400; }
+
+  .body { padding: 32px 36px 28px; display: flex; flex-direction: column; gap: 0; }
+
+  .section-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: #6b7a99; margin-bottom: 10px; padding-left: 2px;
+  }
+
+  /* node colours */
+  .node-user   { background:#f0f9ff; border-color:#38bdf8; color:#0a3a5a; }
+  .node-action { background:#fff8ec; border-color:#f0a830; color:#7a4f00; }
+  .node-system { background:#eaf2ff; border-color:#5b8dee; color:#1a3a7a; }
+  .node-leak   { background:#ffeaea; border-color:#e05c5c; color:#7a1a1a; }
+  .node-gap    { background:#fff0f0; border-color:#e05c5c; color:#7a1a1a; }
+  .node-warn   { background:#fffbe6; border-color:#d4a000; color:#5a3e00; }
+  .node-ok     { background:#f0fff4; border-color:#27ae60; color:#145a32; }
+
+  .divider { height: 1px; background: #e4eaf4; margin: 0 0 20px; }
+
+  /* ── MAIN FLOW ── */
+  .main-flow {
+    display: flex; align-items: center; gap: 0;
+    margin-bottom: 20px; background: #f7f9fc;
+    border: 1.5px solid #d8e2f0; border-radius: 12px;
+    padding: 16px 18px; overflow-x: auto;
+  }
+  .flow-step { flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; min-width:108px; }
+  .flow-box {
+    border-radius:8px; padding:9px 10px; font-size:12px;
+    font-weight:600; text-align:center; line-height:1.3; width:100%; border:1.5px solid;
+  }
+  .flow-sub { font-size:10px; color:#8896b0; text-align:center; font-weight:400; line-height:1.3; max-width:115px; }
+  .flow-arr { font-size:20px; color:#aab5cc; flex-shrink:0; padding:0 4px; margin-bottom:20px; }
+  .flow-arr.red   { color:#e05c5c; }
+  .flow-arr.amber { color:#f0a830; }
+  .flow-arr.blue  { color:#38bdf8; }
+
+  /* ── MODALITY GRID ── */
+  .modal-section {
+    background: #f7f9fc;
+    border: 1.5px solid #d8e2f0;
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+  }
+  .modal-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: #6b7a99; margin-bottom: 14px; text-align: center;
+  }
+  .modal-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .modal-card {
+    border-radius: 8px; border: 1.5px solid; padding: 10px 10px 8px;
+    display: flex; flex-direction: column; gap: 4px; align-items: center;
+  }
+  .mc-img  { background:#f0f9ff; border-color:#38bdf8; }
+  .mc-aud  { background:#faf0ff; border-color:#a855f7; }
+  .mc-doc  { background:#fff8ec; border-color:#f0a830; }
+  .mc-vid  { background:#f0fff4; border-color:#27ae60; }
+
+  .modal-icon { font-size: 20px; }
+  .modal-type { font-size:11.5px; font-weight:700; text-align:center; line-height:1.2; }
+  .mc-img  .modal-type { color:#0a3a5a; }
+  .mc-aud  .modal-type { color:#5a0a8a; }
+  .mc-doc  .modal-type { color:#7a4f00; }
+  .mc-vid  .modal-type { color:#145a32; }
+
+  .modal-examples { font-size:10px; color:#6b7a99; text-align:center; line-height:1.3; }
+  .modal-derives  { font-size:9.5px; text-align:center; line-height:1.3; margin-top:2px; }
+  .mc-img  .modal-derives { color:#0a3a5a; }
+  .mc-aud  .modal-derives { color:#5a0a8a; }
+  .mc-doc  .modal-derives { color:#7a4f00; }
+  .mc-vid  .modal-derives { color:#145a32; }
+
+  .modal-arrow-row {
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px; margin-bottom: 10px;
+  }
+  .modal-arrow-row span { font-size: 16px; color: #e05c5c; }
+
+  .modal-derives-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .derived-box {
+    border-radius: 6px; padding: 7px 8px; font-size: 10.5px;
+    font-weight: 600; text-align: center; line-height: 1.3;
+    border: 1.5px solid;
+  }
+
+  /* ── COLUMNS ── */
+  .columns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+  .attack-column { background:#f7f9fc; border:1.5px solid #d8e2f0; border-radius:10px; padding:16px 14px; }
+  .attack-column h3 {
+    font-size:11px; font-weight:700; text-transform:uppercase;
+    letter-spacing:1.2px; color:#6b7a99; margin-bottom:12px; text-align:center;
+  }
+  .node {
+    border-radius:8px; padding:9px 12px; font-size:12px;
+    font-weight:600; line-height:1.35; text-align:center;
+    margin-bottom:6px; border:1.5px solid;
+  }
+  .arrow { display:flex; justify-content:center; align-items:center; height:22px; color:#aab5cc; font-size:18px; line-height:1; }
+  .arrow.red   { color:#e05c5c; }
+  .arrow.amber { color:#f0a830; }
+  .arrow.blue  { color:#38bdf8; }
+
+  .tag {
+    display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:9.5px;
+    background:#0e1f2a; color:#38bdf8; border-radius:4px;
+    padding:1px 6px; margin-bottom:4px; letter-spacing:0.5px;
+  }
+
+  /* ── IMPACT ROW ── */
+  .impact-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px; }
+  .impact-chip {
+    border-radius:8px; padding:9px 10px; font-size:11.5px;
+    font-weight:600; text-align:center; line-height:1.3; border:1.5px solid;
+  }
+  .chip-red    { background:#fff0f0; border-color:#e05c5c; color:#c0392b; }
+  .chip-amber  { background:#fff8ec; border-color:#f0a830; color:#7a4f00; }
+  .chip-blue   { background:#f0f9ff; border-color:#38bdf8; color:#0a3a5a; }
+  .chip-purple { background:#faf0ff; border-color:#a855f7; color:#5a0a8a; }
+
+  .footer {
+    background:#0e1f2a; color:#90c8e0; font-size:11px;
+    text-align:center; padding:11px 20px; letter-spacing:0.3px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="label">DSGAI09 · Attack Path</div>
+    <h1>Multimodal Capture &amp; Cross-Channel Data Leakage</h1>
+    <p>Images, audio, and documents ingested for context — derivatives persist beyond the original use</p>
+  </div>
+
+  <div class="body">
+
+    <!-- PRIMARY FLOW -->
+    <div class="section-label">Primary Attack Flow</div>
+    <div class="main-flow">
+      <div class="flow-step">
+        <div class="flow-box node-user">👤 User Uploads Media</div>
+        <div class="flow-sub">Screenshot, voice note, PDF, ID scan to "give context"</div>
+      </div>
+      <div class="flow-arr blue">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-action">OCR / ASR Extraction</div>
+        <div class="flow-sub">Raw media processed — text extracted, transcribed</div>
+      </div>
+      <div class="flow-arr">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-system">Stored in Object Store / Training Bucket</div>
+        <div class="flow-sub">Raw media + extracted text retained without classification</div>
+      </div>
+      <div class="flow-arr amber">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-warn">Bucket Misconfigured or Compromised</div>
+        <div class="flow-sub">ACL error, leaked token, or model inversion attack</div>
+      </div>
+      <div class="flow-arr red">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-leak">💥 Secrets, IDs &amp; Biometrics Leaked</div>
+        <div class="flow-sub">Outside traditional text-based DLP coverage</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- MODALITY GRID -->
+    <div class="modal-section">
+      <div class="modal-title">Input Modalities → Derived Artifacts — Each Inherits the Same Sensitivity Risk</div>
+
+      <div class="modal-grid">
+        <div class="modal-card mc-img">
+          <div class="modal-icon">🖼️</div>
+          <div class="modal-type">Images &amp; Screenshots</div>
+          <div class="modal-examples">Admin panels · whiteboards · ID scans · dashboards</div>
+          <div class="modal-derives">→ OCR text · embeddings · thumbnails</div>
+        </div>
+        <div class="modal-card mc-aud">
+          <div class="modal-icon">🎙️</div>
+          <div class="modal-type">Audio &amp; Voice</div>
+          <div class="modal-examples">Voice notes · call recordings · meetings</div>
+          <div class="modal-derives">→ ASR transcripts · speaker embeddings · logs</div>
+        </div>
+        <div class="modal-card mc-doc">
+          <div class="modal-icon">📄</div>
+          <div class="modal-type">Documents &amp; PDFs</div>
+          <div class="modal-examples">Passports · contracts · financial reports · code</div>
+          <div class="modal-derives">→ Extracted text · vector embeddings · metadata</div>
+        </div>
+        <div class="modal-card mc-vid">
+          <div class="modal-icon">🎥</div>
+          <div class="modal-type">Video</div>
+          <div class="modal-examples">Screen recordings · demos · surveillance</div>
+          <div class="modal-derives">→ Frames · transcripts · face embeddings</div>
+        </div>
+      </div>
+
+      <div class="modal-arrow-row">
+        <span>↓</span>
+        <span style="font-size:11px;color:#e05c5c;font-family:'IBM Plex Mono',monospace;font-weight:600;">CLASSIFICATION STOPS AT SOURCE — DERIVATIVES GO UNTAGGED</span>
+        <span>↓</span>
+      </div>
+
+      <div class="modal-derives-row">
+        <div class="derived-box node-gap">OCR / ASR Text<br><span style="font-weight:400;font-size:10px;">Logged unredacted — DLP blind spot</span></div>
+        <div class="derived-box node-gap">Vector Embeddings<br><span style="font-weight:400;font-size:10px;">Biometric &amp; PII encoded — inversion risk</span></div>
+        <div class="derived-box node-gap">Training Bucket<br><span style="font-weight:400;font-size:10px;">Used for model training without consent</span></div>
+        <div class="derived-box node-gap">Logs &amp; Caches<br><span style="font-weight:400;font-size:10px;">Raw media URL + extracted text persisted</span></div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- THREE ATTACK VECTORS -->
+    <div class="section-label">Attack Vectors</div>
+    <div class="columns">
+
+      <!-- VECTOR 1 -->
+      <div class="attack-column">
+        <h3>① Storage Bucket Compromise</h3>
+        <div class="tag">MISCONFIGURATION</div>
+        <div class="node node-user">Engineer shares admin panel screenshot with assistant</div>
+        <div class="arrow blue">↓</div>
+        <div class="node node-action">OCR extracts API keys &amp; customer data visible in UI</div>
+        <div class="arrow">↓</div>
+        <div class="node node-system">Image + extracted text stored in training bucket</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-warn">Bucket ACL misconfigured — publicly accessible</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">Raw screenshots + structured credentials exposed externally</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ Text DLP never triggered — image channel bypassed entirely
+        </div>
+      </div>
+
+      <!-- VECTOR 2 -->
+      <div class="attack-column">
+        <h3>② Cross-Modal Re-Identification</h3>
+        <div class="tag">INFERENCE ATTACK</div>
+        <div class="node node-user">User uploads voice note + document scan across sessions</div>
+        <div class="arrow blue">↓</div>
+        <div class="node node-action">ASR transcript + face embedding stored in separate logs</div>
+        <div class="arrow">↓</div>
+        <div class="node node-system">Attacker queries or compromises embedding store</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-warn">Combines visual, audio, and text traces across modalities</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">Individual re-identified — sensitive attributes inferred without any single record being complete</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ Biometric data — stricter regime: GDPR Art. 9 · BIPA
+        </div>
+      </div>
+
+      <!-- VECTOR 3 -->
+      <div class="attack-column">
+        <h3>③ Training Pipeline Ingestion</h3>
+        <div class="tag">CONSENT VIOLATION</div>
+        <div class="node node-user">User uploads ID scan to multimodal assistant for verification</div>
+        <div class="arrow blue">↓</div>
+        <div class="node node-action">Extracted text (DOB, address, ID number) flows to training bucket</div>
+        <div class="arrow">↓</div>
+        <div class="node node-system">No training opt-out enforced — batch ingested into fine-tuning run</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-warn">Model memorizes ID details — surfaces in unrelated queries</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">Erasure request filed — data encoded in weights, unlearning infeasible</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ Short TTL missing — transient upload retained indefinitely in long-term corpus
+        </div>
+      </div>
+
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- IMPACT -->
+    <div class="section-label">Resulting Impact</div>
+    <div class="impact-row">
+      <div class="impact-chip chip-red">🔓 Secrets &amp; ID Leakage<br><span style="font-weight:400;font-size:10.5px;">Outside text DLP coverage — image channel blind spot</span></div>
+      <div class="impact-chip chip-purple">🧬 Biometric Exposure<br><span style="font-weight:400;font-size:10.5px;">Face &amp; voice data — stricter GDPR Art. 9 / BIPA regime</span></div>
+      <div class="impact-chip chip-blue">🔍 Cross-Modal Re-ID<br><span style="font-weight:400;font-size:10.5px;">Visual + audio + text traces combined to re-identify individuals</span></div>
+      <div class="impact-chip chip-amber">📋 Consent &amp; Erasure Failure<br><span style="font-weight:400;font-size:10.5px;">Multimodal data trained on without consent — unlearning infeasible</span></div>
+    </div>
+
+  </div><!-- /body -->
+
+  <div class="footer">No multimodal-specific CVE · GDPR Art. 9 Biometric Data · BIPA · EDPS Multimodal AI Report · Pillar Security Research · Cross-ref: DSGAI01, DSGAI07</div>
+</div>
+</body>
+</html>

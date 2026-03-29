@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSGAI18 — Inference & Data Reconstruction: Attack Path</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: #f0f4f8;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 24px;
+    min-height: 100vh;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.13);
+    width: 880px;
+    max-width: 100%;
+  }
+
+  .header {
+    background: #0f1a14;
+    color: #fff;
+    padding: 28px 36px 22px;
+    text-align: center;
+  }
+  .header .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: #4ade80;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .header h1 { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+  .header p  { font-size: 13px; color: #88c8a0; font-weight: 400; }
+
+  .body { padding: 32px 36px 28px; display: flex; flex-direction: column; gap: 0; }
+
+  .section-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: #6b7a99; margin-bottom: 10px; padding-left: 2px;
+  }
+
+  /* node colours */
+  .node-attacker { background:#fff0f0; border-color:#e05c5c; color:#c0392b; }
+  .node-action   { background:#fff8ec; border-color:#f0a830; color:#7a4f00; }
+  .node-system   { background:#eaf2ff; border-color:#5b8dee; color:#1a3a7a; }
+  .node-green    { background:#f0fff4; border-color:#4ade80; color:#0a4a1a; }
+  .node-leak     { background:#ffeaea; border-color:#e05c5c; color:#7a1a1a; }
+  .node-gap      { background:#fff0f0; border-color:#e05c5c; color:#7a1a1a; }
+  .node-warn     { background:#fffbe6; border-color:#d4a000; color:#5a3e00; }
+  .node-purple   { background:#f5f0ff; border-color:#a855f7; color:#5a0a8a; }
+
+  .divider { height: 1px; background: #e4eaf4; margin: 0 0 20px; }
+
+  /* ── MAIN FLOW ── */
+  .main-flow {
+    display: flex; align-items: center; gap: 0;
+    margin-bottom: 20px; background: #f7f9fc;
+    border: 1.5px solid #d8e2f0; border-radius: 12px;
+    padding: 16px 18px; overflow-x: auto;
+  }
+  .flow-step { flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; min-width:108px; }
+  .flow-box {
+    border-radius:8px; padding:9px 10px; font-size:12px;
+    font-weight:600; text-align:center; line-height:1.3; width:100%; border:1.5px solid;
+  }
+  .flow-sub { font-size:10px; color:#8896b0; text-align:center; font-weight:400; line-height:1.3; max-width:115px; }
+  .flow-arr { font-size:20px; color:#aab5cc; flex-shrink:0; padding:0 4px; margin-bottom:20px; }
+  .flow-arr.red   { color:#e05c5c; }
+  .flow-arr.amber { color:#f0a830; }
+  .flow-arr.green { color:#4ade80; }
+
+  /* ── TECHNIQUE COMPARISON ── */
+  .techniques-section {
+    background: #f7f9fc;
+    border: 1.5px solid #d8e2f0;
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+  }
+  .techniques-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: #6b7a99; margin-bottom: 14px; text-align: center;
+  }
+  .techniques-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .tech-card {
+    border-radius: 9px; border: 1.5px solid; padding: 12px 12px 10px;
+    display: flex; flex-direction: column; gap: 5px;
+  }
+  .tc-mi    { background:#fff0f0; border-color:#e05c5c; }
+  .tc-inv   { background:#f5f0ff; border-color:#a855f7; }
+  .tc-rag   { background:#fff8ec; border-color:#f0a830; }
+
+  .tech-icon  { font-size: 20px; text-align: center; }
+  .tech-name  { font-size: 12px; font-weight: 700; text-align: center; line-height: 1.2; }
+  .tc-mi  .tech-name  { color:#c0392b; }
+  .tc-inv .tech-name  { color:#5a0a8a; }
+  .tc-rag .tech-name  { color:#7a4f00; }
+
+  .tech-how   { font-size: 10.5px; font-weight: 400; color: #555; line-height: 1.4; text-align: center; }
+  .tech-out   { font-size: 10px; font-weight: 600; text-align: center; line-height: 1.3; }
+  .tc-mi  .tech-out   { color:#c0392b; }
+  .tc-inv .tech-out   { color:#5a0a8a; }
+  .tc-rag .tech-out   { color:#7a4f00; }
+
+  .tech-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px; border-radius: 4px; padding: 2px 7px;
+    font-weight: 700; text-align: center; align-self: center;
+  }
+  .tc-mi  .tech-badge { background:#ffd4d4; color:#7a1a1a; border:1px solid #e05c5c; }
+  .tc-inv .tech-badge { background:#f0e8ff; color:#5a0a8a; border:1px solid #a855f7; }
+  .tc-rag .tech-badge { background:#fff3cd; color:#7a4f00; border:1px solid #d4a000; }
+
+  /* ── AMPLIFICATION VISUAL ── */
+  .amp-section {
+    background: #fffdf0;
+    border: 1.5px solid #d4a000;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+  }
+  .amp-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: #7a4f00; margin-bottom: 12px; text-align: center;
+  }
+  .amp-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    align-items: center;
+  }
+  .amp-step {
+    border-radius: 8px; padding: 9px 8px; font-size: 11px;
+    font-weight: 600; text-align: center; line-height: 1.3; border: 1.5px solid;
+  }
+  .amp-arr { font-size: 20px; color: #d4a000; text-align: center; }
+  .amp-col { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .amp-sub { font-size: 9.5px; color: #888; text-align: center; line-height: 1.3; }
+
+  /* ── COLUMNS ── */
+  .columns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+  .attack-column { background:#f7f9fc; border:1.5px solid #d8e2f0; border-radius:10px; padding:16px 14px; }
+  .attack-column h3 {
+    font-size:11px; font-weight:700; text-transform:uppercase;
+    letter-spacing:1.2px; color:#6b7a99; margin-bottom:12px; text-align:center;
+  }
+  .node {
+    border-radius:8px; padding:9px 12px; font-size:12px;
+    font-weight:600; line-height:1.35; text-align:center;
+    margin-bottom:6px; border:1.5px solid;
+  }
+  .arrow { display:flex; justify-content:center; align-items:center; height:22px; color:#aab5cc; font-size:18px; line-height:1; }
+  .arrow.red    { color:#e05c5c; }
+  .arrow.amber  { color:#f0a830; }
+  .arrow.green  { color:#4ade80; }
+  .arrow.purple { color:#a855f7; }
+
+  .tag {
+    display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:9.5px;
+    background:#0f1a14; color:#4ade80; border-radius:4px;
+    padding:1px 6px; margin-bottom:4px; letter-spacing:0.5px;
+  }
+
+  /* ── IMPACT ROW ── */
+  .impact-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px; }
+  .impact-chip {
+    border-radius:8px; padding:9px 10px; font-size:11.5px;
+    font-weight:600; text-align:center; line-height:1.3; border:1.5px solid;
+  }
+  .chip-red    { background:#fff0f0; border-color:#e05c5c; color:#c0392b; }
+  .chip-amber  { background:#fff8ec; border-color:#f0a830; color:#7a4f00; }
+  .chip-purple { background:#f5f0ff; border-color:#a855f7; color:#5a0a8a; }
+  .chip-green  { background:#f0fff4; border-color:#4ade80; color:#0a4a1a; }
+
+  .footer {
+    background:#0f1a14; color:#88c8a0; font-size:11px;
+    text-align:center; padding:11px 20px; letter-spacing:0.3px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="label">DSGAI18 · Attack Path</div>
+    <h1>Inference &amp; Data Reconstruction</h1>
+    <p>Iterative querying to infer membership, invert embeddings, or reconstruct training samples — no raw data exposed</p>
+  </div>
+
+  <div class="body">
+
+    <!-- PRIMARY FLOW -->
+    <div class="section-label">Primary Attack Flow</div>
+    <div class="main-flow">
+      <div class="flow-step">
+        <div class="flow-box node-attacker">🎯 Attacker</div>
+        <div class="flow-sub">No direct data access required — only inference API or embedding endpoint</div>
+      </div>
+      <div class="flow-arr green">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-action">Iterative Probing Queries</div>
+        <div class="flow-sub">Carefully varied inputs — confidence scores, k-NN results, or output distributions observed</div>
+      </div>
+      <div class="flow-arr amber">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-system">Signal Accumulation</div>
+        <div class="flow-sub">RAG cache, agent memory, and repeated queries compound inference signal</div>
+      </div>
+      <div class="flow-arr amber">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-warn">Membership Confirmed or Attributes Reconstructed</div>
+        <div class="flow-sub">"Was X in training?" answered with &gt;0.9 accuracy</div>
+      </div>
+      <div class="flow-arr red">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-leak">💥 Privacy Violation</div>
+        <div class="flow-sub">Sensitive data inferred — no raw record ever directly exposed</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- TECHNIQUE COMPARISON -->
+    <div class="techniques-section">
+      <div class="techniques-title">Three Inference &amp; Reconstruction Techniques — No Direct Data Access Required</div>
+      <div class="techniques-grid">
+
+        <div class="tech-card tc-mi">
+          <div class="tech-icon">🔍</div>
+          <div class="tech-name">Membership Inference</div>
+          <div class="tech-how">Attacker submits target record variants — observes confidence score differences. Higher confidence on exact record vs. perturbed version signals presence in training set.</div>
+          <div class="tech-out">Output: "Patient X WAS in training data" — confirmed with &gt;0.9 accuracy against healthcare model</div>
+          <div class="tech-badge">SATML 2026 METHODOLOGY</div>
+        </div>
+
+        <div class="tech-card tc-inv">
+          <div class="tech-icon">🔄</div>
+          <div class="tech-name">Embedding Inversion</div>
+          <div class="tech-how">Attacker runs k-NN queries against mis-scoped vector store. Nearest-neighbor relationships and confidence differentials used to approximate or reconstruct original source text.</div>
+          <div class="tech-out">Output: Approximate reconstruction of proprietary documents used to generate embeddings — especially effective on shorter passages</div>
+          <div class="tech-badge">PARTIAL TEXT RECOVERY DEMONSTRATED</div>
+        </div>
+
+        <div class="tech-card tc-rag">
+          <div class="tech-icon">🔁</div>
+          <div class="tech-name">RAG &amp; Agent Memory Amplification</div>
+          <div class="tech-how">Repeated querying of RAG pipeline accumulates cross-interaction signals. Cached responses and agent memory reuse compound inference risk — no single query reveals the data, but the sequence does.</div>
+          <div class="tech-out">Output: Training membership or sensitive attributes reconstructed across multiple sessions — each query individually benign</div>
+          <div class="tech-badge">COMPOUNDING SIGNAL ACCUMULATION</div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- AMPLIFICATION VISUAL -->
+    <div class="amp-section">
+      <div class="amp-title">Signal Accumulation — How Individual Benign Queries Become a Data Reconstruction Attack</div>
+      <div class="amp-row">
+        <div class="amp-col">
+          <div class="amp-step node-system">Query 1<br><span style="font-weight:400;font-size:10px;">Probe variant A — confidence: 0.62</span></div>
+          <div class="amp-sub">Individually harmless</div>
+        </div>
+        <div class="amp-col">
+          <div class="amp-step node-system">Query 2<br><span style="font-weight:400;font-size:10px;">Probe variant B — confidence: 0.61</span></div>
+          <div class="amp-sub">Individually harmless</div>
+        </div>
+        <div class="amp-col">
+          <div class="amp-step node-action">Query N (exact record)<br><span style="font-weight:400;font-size:10px;">Confidence: 0.91 — anomaly detected</span></div>
+          <div class="amp-sub">Membership signal confirmed</div>
+        </div>
+        <div class="amp-col">
+          <div class="amp-step node-leak">Membership Confirmed<br><span style="font-weight:400;font-size:10px;">+ cached RAG responses accumulate attributes</span></div>
+          <div class="amp-sub">Record reconstructed across sessions</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- THREE ATTACK VECTORS -->
+    <div class="section-label">Attack Vectors</div>
+    <div class="columns">
+
+      <!-- VECTOR 1 -->
+      <div class="attack-column">
+        <h3>① Healthcare Model Membership Inference</h3>
+        <div class="tag">MEMBERSHIP INFERENCE</div>
+        <div class="node node-attacker">Attacker targets healthcare fine-tuned model</div>
+        <div class="arrow green">↓</div>
+        <div class="node node-action">Submits carefully varied PHI queries — observes confidence differentials</div>
+        <div class="arrow">↓</div>
+        <div class="node node-warn">Exact record produces measurably higher confidence than perturbations</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-action">Shadow model built from API responses — refines membership signal</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">VIP patient's presence in training confirmed — HIPAA violation without any raw record returned</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ Harm arises from indirect inference — no raw data ever directly exposed
+        </div>
+      </div>
+
+      <!-- VECTOR 2 -->
+      <div class="attack-column">
+        <h3>② Embedding Inversion via k-NN Sweep</h3>
+        <div class="tag">STOLENL0RA / USENIX 2025</div>
+        <div class="node node-attacker">Attacker gains access to vector store query API</div>
+        <div class="arrow green">↓</div>
+        <div class="node node-action">Issues high-volume k-NN queries sweeping embedding space</div>
+        <div class="arrow">↓</div>
+        <div class="node node-warn">Nearest-neighbor relationships map approximate structure of source documents</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-purple">LoRA adapter also targeted — StolenLoRA extraction recovers training examples from small adapter</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">Proprietary documents partially reconstructed — raw embedding export API was unrestricted</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ Even models not returning text leak via probability scores &amp; embedding similarities
+        </div>
+      </div>
+
+      <!-- VECTOR 3 -->
+      <div class="attack-column">
+        <h3>③ RAG Cross-Session Signal Accumulation</h3>
+        <div class="tag">COMPOUNDING RISK</div>
+        <div class="node node-attacker">Attacker probes RAG assistant across multiple sessions</div>
+        <div class="arrow green">↓</div>
+        <div class="node node-action">Each query individually passes rate limits — innocuous in isolation</div>
+        <div class="arrow">↓</div>
+        <div class="node node-warn">Cached responses and agent memory reuse leak cross-interaction signal</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-action">Accumulated signals across sessions reconstruct sensitive attributes not in any single response</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">Privacy violation via aggregation — no single query would have triggered an alert</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ Per-query rate limits insufficient — cross-session budget and signal monitoring required
+        </div>
+      </div>
+
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- IMPACT -->
+    <div class="section-label">Resulting Impact</div>
+    <div class="impact-row">
+      <div class="impact-chip chip-red">👤 Privacy Violation via Inference<br><span style="font-weight:400;font-size:10.5px;">Sensitive data reconstructed — no raw record exposed</span></div>
+      <div class="impact-chip chip-purple">🔄 Embedding Inversion<br><span style="font-weight:400;font-size:10.5px;">Source documents recovered from vector store</span></div>
+      <div class="impact-chip chip-amber">⚖️ Legal &amp; Regulatory Penalties<br><span style="font-weight:400;font-size:10.5px;">HIPAA / GDPR — indirect inference constitutes breach</span></div>
+      <div class="impact-chip chip-green">🧪 LoRA Adapter Extraction<br><span style="font-weight:400;font-size:10.5px;">Training data recovered from small fine-tuned adapters</span></div>
+    </div>
+
+  </div><!-- /body -->
+
+  <div class="footer">No canonical CVE · StolenLoRA (USENIX Security 2025) · SaTML 2026 Membership Inference · Cross-ref: DSGAI05 Vector Store · DSGAI10 Synthetic Data · DSGAI13 Vector Security</div>
+</div>
+</body>
+</html>

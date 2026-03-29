@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Smooth scrolling */
+html { scroll-behavior: smooth; }
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #0e1117; }
+::-webkit-scrollbar-thumb { background: #252d40; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #404860; }
+
+/* Animation keyframes */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out forwards;
+}
+
+/* Staggered card animation */
+.card-stagger { opacity: 0; animation: fadeIn 0.4s ease-out forwards; }
+.card-stagger:nth-child(1) { animation-delay: 0.05s; }
+.card-stagger:nth-child(2) { animation-delay: 0.1s; }
+.card-stagger:nth-child(3) { animation-delay: 0.15s; }
+.card-stagger:nth-child(4) { animation-delay: 0.2s; }
+.card-stagger:nth-child(5) { animation-delay: 0.25s; }
+.card-stagger:nth-child(6) { animation-delay: 0.3s; }
+.card-stagger:nth-child(7) { animation-delay: 0.35s; }
+.card-stagger:nth-child(8) { animation-delay: 0.4s; }
+.card-stagger:nth-child(9) { animation-delay: 0.45s; }
+.card-stagger:nth-child(10) { animation-delay: 0.5s; }
+.card-stagger:nth-child(11) { animation-delay: 0.55s; }
+.card-stagger:nth-child(12) { animation-delay: 0.6s; }
+.card-stagger:nth-child(13) { animation-delay: 0.65s; }
+.card-stagger:nth-child(14) { animation-delay: 0.7s; }
+.card-stagger:nth-child(15) { animation-delay: 0.75s; }
+.card-stagger:nth-child(16) { animation-delay: 0.8s; }
+.card-stagger:nth-child(17) { animation-delay: 0.85s; }
+.card-stagger:nth-child(18) { animation-delay: 0.9s; }
+.card-stagger:nth-child(19) { animation-delay: 0.95s; }
+.card-stagger:nth-child(20) { animation-delay: 1.0s; }
+.card-stagger:nth-child(21) { animation-delay: 1.05s; }

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSGAI17 — Data Availability & Resilience Failures in AI Pipelines: Attack Path</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: #f0f4f8;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 24px;
+    min-height: 100vh;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.13);
+    width: 880px;
+    max-width: 100%;
+  }
+
+  .header {
+    background: #1a1420;
+    color: #fff;
+    padding: 28px 36px 22px;
+    text-align: center;
+  }
+  .header .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: #a78bfa;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .header h1 { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+  .header p  { font-size: 13px; color: #b8a8d8; font-weight: 400; }
+
+  .body { padding: 32px 36px 28px; display: flex; flex-direction: column; gap: 0; }
+
+  .section-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: #6b7a99; margin-bottom: 10px; padding-left: 2px;
+  }
+
+  /* node colours */
+  .node-attacker { background:#fff0f0; border-color:#e05c5c; color:#c0392b; }
+  .node-action   { background:#fff8ec; border-color:#f0a830; color:#7a4f00; }
+  .node-system   { background:#eaf2ff; border-color:#5b8dee; color:#1a3a7a; }
+  .node-purple   { background:#f5f0ff; border-color:#a78bfa; color:#3a1a7a; }
+  .node-leak     { background:#ffeaea; border-color:#e05c5c; color:#7a1a1a; }
+  .node-gap      { background:#fff0f0; border-color:#e05c5c; color:#7a1a1a; }
+  .node-warn     { background:#fffbe6; border-color:#d4a000; color:#5a3e00; }
+  .node-ok       { background:#f0fff4; border-color:#27ae60; color:#145a32; }
+  .node-stale    { background:#fdf5ff; border-color:#c060d0; color:#5a0a6a; }
+
+  .divider { height: 1px; background: #e4eaf4; margin: 0 0 20px; }
+
+  /* ── MAIN FLOW ── */
+  .main-flow {
+    display: flex; align-items: center; gap: 0;
+    margin-bottom: 20px; background: #f7f9fc;
+    border: 1.5px solid #d8e2f0; border-radius: 12px;
+    padding: 16px 18px; overflow-x: auto;
+  }
+  .flow-step { flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; min-width:108px; }
+  .flow-box {
+    border-radius:8px; padding:9px 10px; font-size:12px;
+    font-weight:600; text-align:center; line-height:1.3; width:100%; border:1.5px solid;
+  }
+  .flow-sub { font-size:10px; color:#8896b0; text-align:center; font-weight:400; line-height:1.3; max-width:115px; }
+  .flow-arr { font-size:20px; color:#aab5cc; flex-shrink:0; padding:0 4px; margin-bottom:20px; }
+  .flow-arr.red    { color:#e05c5c; }
+  .flow-arr.amber  { color:#f0a830; }
+  .flow-arr.purple { color:#a78bfa; }
+
+  /* ── SILENT FAILOVER DIAGRAM ── */
+  .failover-section {
+    background: #f7f9fc;
+    border: 1.5px solid #d8e2f0;
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+  }
+  .failover-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: #6b7a99; margin-bottom: 14px; text-align: center;
+  }
+
+  .failover-layout {
+    display: grid;
+    grid-template-columns: 1fr 28px 1fr 28px 1fr;
+    align-items: center;
+    gap: 0;
+  }
+
+  .fo-col { display: flex; flex-direction: column; gap: 7px; align-items: stretch; }
+  .fo-box {
+    border-radius: 8px; padding: 10px 10px; font-size: 11.5px;
+    font-weight: 600; text-align: center; line-height: 1.3; border: 1.5px solid;
+  }
+  .fo-arr { font-size: 20px; text-align: center; }
+  .fo-arr.amber  { color: #f0a830; }
+  .fo-arr.red    { color: #e05c5c; }
+
+  .fo-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px; text-align: center; border-radius: 4px;
+    padding: 2px 7px; font-weight: 700; margin-top: 2px;
+    display: inline-block; align-self: center;
+  }
+  .lbl-ok    { background:#d4f5e4; color:#145a32; border:1px solid #27ae60; }
+  .lbl-fail  { background:#ffd4d4; color:#7a1a1a; border:1px solid #e05c5c; }
+  .lbl-warn  { background:#fff3cd; color:#7a4f00; border:1px solid #d4a000; }
+  .lbl-ghost { background:#f0e8ff; color:#5a0a8a; border:1px solid #a855f7; }
+
+  .silent-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; font-weight: 700;
+    background: #1a1420; color: #e05c5c;
+    border: 1.5px solid #e05c5c; border-radius: 6px;
+    padding: 6px 12px; text-align: center;
+    margin-top: 10px;
+  }
+
+  /* ── COLUMNS ── */
+  .columns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+  .attack-column { background:#f7f9fc; border:1.5px solid #d8e2f0; border-radius:10px; padding:16px 14px; }
+  .attack-column h3 {
+    font-size:11px; font-weight:700; text-transform:uppercase;
+    letter-spacing:1.2px; color:#6b7a99; margin-bottom:12px; text-align:center;
+  }
+  .node {
+    border-radius:8px; padding:9px 12px; font-size:12px;
+    font-weight:600; line-height:1.35; text-align:center;
+    margin-bottom:6px; border:1.5px solid;
+  }
+  .arrow { display:flex; justify-content:center; align-items:center; height:22px; color:#aab5cc; font-size:18px; line-height:1; }
+  .arrow.red    { color:#e05c5c; }
+  .arrow.amber  { color:#f0a830; }
+  .arrow.purple { color:#a78bfa; }
+
+  .tag {
+    display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:9.5px;
+    background:#1a1420; color:#a78bfa; border-radius:4px;
+    padding:1px 6px; margin-bottom:4px; letter-spacing:0.5px;
+  }
+
+  /* ── IMPACT ROW ── */
+  .impact-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px; }
+  .impact-chip {
+    border-radius:8px; padding:9px 10px; font-size:11.5px;
+    font-weight:600; text-align:center; line-height:1.3; border:1.5px solid;
+  }
+  .chip-red    { background:#fff0f0; border-color:#e05c5c; color:#c0392b; }
+  .chip-amber  { background:#fff8ec; border-color:#f0a830; color:#7a4f00; }
+  .chip-purple { background:#f5f0ff; border-color:#a78bfa; color:#3a1a7a; }
+  .chip-blue   { background:#eaf2ff; border-color:#5b8dee; color:#1a3a7a; }
+
+  .footer {
+    background:#1a1420; color:#b8a8d8; font-size:11px;
+    text-align:center; padding:11px 20px; letter-spacing:0.3px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="label">DSGAI17 · Attack Path</div>
+    <h1>Data Availability &amp; Resilience Failures in AI Pipelines</h1>
+    <p>Silent degradation at the retrieval layer produces misinformation — indistinguishable from correct output</p>
+  </div>
+
+  <div class="body">
+
+    <!-- PRIMARY FLOW -->
+    <div class="section-label">Primary Failure Flow</div>
+    <div class="main-flow">
+      <div class="flow-step">
+        <div class="flow-box node-action">Vector DB Saturated or Fails</div>
+        <div class="flow-sub">Agent query burst, adversarial load, or infrastructure failure</div>
+      </div>
+      <div class="flow-arr purple">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-stale">Silent Failover to Stale Replica</div>
+        <div class="flow-sub">18 hours behind primary — no staleness signal surfaced</div>
+      </div>
+      <div class="flow-arr amber">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-warn">RAG Responses Grounded in Outdated Data</div>
+        <div class="flow-sub">Deleted records, revoked content, or contradictory information retrieved</div>
+      </div>
+      <div class="flow-arr amber">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-gap">No User-Visible Error Signal</div>
+        <div class="flow-sub">Output looks correct — monitoring stack sees no anomaly</div>
+      </div>
+      <div class="flow-arr red">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-leak">💥 Silent Misinformation + Compliance Violation</div>
+        <div class="flow-sub">DSR-erased records resurface · discovered in audit weeks later</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- SILENT FAILOVER DIAGRAM -->
+    <div class="failover-section">
+      <div class="failover-title">The Silent Failover Problem — What the System Knows vs. What Users See</div>
+
+      <div class="failover-layout">
+
+        <!-- PRIMARY -->
+        <div class="fo-col">
+          <div class="fo-box node-ok">Primary Vector DB<br><span style="font-size:10px;font-weight:400;">Up to date · DSR erasures applied ✓</span></div>
+          <div class="fo-label lbl-ok">HEALTHY PRIMARY</div>
+          <div class="fo-box node-ok">Index freshness: T+0<br><span style="font-size:10px;font-weight:400;">Deleted records purged ✓</span></div>
+        </div>
+
+        <div class="fo-arr amber" style="text-align:center; padding-top:30px;">→<br><span style="font-size:9px;color:#f0a830;font-family:'IBM Plex Mono',monospace;">FAILS OVER<br>SILENTLY</span></div>
+
+        <!-- REPLICA -->
+        <div class="fo-col">
+          <div class="fo-box node-stale">Failover Replica<br><span style="font-size:10px;font-weight:400;">18 hours behind primary</span></div>
+          <div class="fo-label lbl-warn">STALE REPLICA</div>
+          <div class="fo-box node-gap">Index freshness: T–18h<br><span style="font-size:10px;font-weight:400;">DSR-deleted records still present ✗</span></div>
+        </div>
+
+        <div class="fo-arr red" style="text-align:center; padding-top:30px;">→<br><span style="font-size:9px;color:#e05c5c;font-family:'IBM Plex Mono',monospace;">RAG QUERIES<br>NOW SERVED</span></div>
+
+        <!-- USERS -->
+        <div class="fo-col">
+          <div class="fo-box node-gap">Users receive responses<br><span style="font-size:10px;font-weight:400;">No staleness warning surfaced</span></div>
+          <div class="fo-label lbl-fail">COMPLIANCE VIOLATION</div>
+          <div class="fo-box node-leak">Deleted customer data surfaces<br><span style="font-size:10px;font-weight:400;">DSR erasure obligation violated ✗</span></div>
+        </div>
+
+      </div>
+      <div class="silent-badge">⚠ CRITICAL: The failure mode is not a 503 — it is silent misinformation at inference time, indistinguishable from correct output</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- THREE ATTACK VECTORS -->
+    <div class="section-label">Failure Vectors</div>
+    <div class="columns">
+
+      <!-- VECTOR 1 -->
+      <div class="attack-column">
+        <h3>① Vector DB Saturation</h3>
+        <div class="tag">AVAILABILITY ATTACK</div>
+        <div class="node node-action">Agentic workflow issues high-recall retrieval queries in a loop</div>
+        <div class="arrow">↓</div>
+        <div class="node node-warn">Or: hostile actor sends adversarial high-cardinality queries</div>
+        <div class="arrow">↓</div>
+        <div class="node node-gap">Vector similarity search scales with index size — no circuit breaker</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-action">Latency degrades — 5xx errors propagate into RAG quality</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">All applications sharing retrieval tier affected — blast radius is shared infrastructure-wide</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ Unlike SQL, vector search has no bounded query plan — complexity scales unbounded
+        </div>
+      </div>
+
+      <!-- VECTOR 2 -->
+      <div class="attack-column">
+        <h3>② Stale Replica Serves Deleted Records</h3>
+        <div class="tag">DSR VIOLATION</div>
+        <div class="node node-ok">Customer submits GDPR Art. 17 erasure request ✓</div>
+        <div class="arrow">↓</div>
+        <div class="node node-ok">Record deleted from primary index ✓</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-stale">Primary fails over to replica — 18h behind — erasure not propagated</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-gap">Deleted record retrieved and surfaced in RAG responses for hours</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">Compliance team discovers exposure in audit 2 weeks later — DSR obligation violated</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ Stale replicas create compliance exposure independent of primary system correctness
+        </div>
+      </div>
+
+      <!-- VECTOR 3 -->
+      <div class="attack-column">
+        <h3>③ Corrupted Artifact — Unvalidated Restore</h3>
+        <div class="tag">RECOVERY FAILURE</div>
+        <div class="node node-action">Ransomware or targeted corruption hits model registry or embedding store</div>
+        <div class="arrow">↓</div>
+        <div class="node node-system">Team restores from backup — row counts match ✓</div>
+        <div class="arrow">↓</div>
+        <div class="node node-warn">No semantic validation — nearest-neighbor results not tested against known-good pairs</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-gap">Restored index produces semantically incorrect retrieval — model checkpoint outputs degraded</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">Production serving corrupted artifacts — silent misinformation at scale until discovered</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ Generic DB restore drills do not validate AI artifact semantic correctness
+        </div>
+      </div>
+
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- IMPACT -->
+    <div class="section-label">Resulting Impact</div>
+    <div class="impact-row">
+      <div class="impact-chip chip-red">🤫 Silent Misinformation<br><span style="font-weight:400;font-size:10.5px;">Degraded responses indistinguishable from correct output</span></div>
+      <div class="impact-chip chip-purple">📋 DSR Compliance Violation<br><span style="font-weight:400;font-size:10.5px;">Erased records resurrected by stale failover replica</span></div>
+      <div class="impact-chip chip-amber">🏗 Shared Infrastructure Blast Radius<br><span style="font-weight:400;font-size:10.5px;">Vector DB saturation affects all apps on retrieval tier</span></div>
+      <div class="impact-chip chip-blue">🔄 Unverifiable Recovery<br><span style="font-weight:400;font-size:10.5px;">Backup restore passes infra checks — fails semantic correctness</span></div>
+    </div>
+
+  </div><!-- /body -->
+
+  <div class="footer">No CVE — Architectural Failure Class · GDPR Art. 17 Erasure Propagation · Cross-ref: DSGAI07 Lifecycle · DSGAI08 Regulatory Violations · DSGAI13 Vector Store Security</div>
+</div>
+</body>
+</html>

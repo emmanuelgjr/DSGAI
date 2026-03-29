@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSGAI13 — Vector Store Platform Data Security: Attack Path</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: #f0f4f8;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 24px;
+    min-height: 100vh;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.13);
+    width: 880px;
+    max-width: 100%;
+  }
+
+  .header {
+    background: #0d1f1a;
+    color: #fff;
+    padding: 28px 36px 22px;
+    text-align: center;
+  }
+  .header .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: #2dd4bf;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .header h1 { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+  .header p  { font-size: 13px; color: #80c8c0; font-weight: 400; }
+
+  .body { padding: 32px 36px 28px; display: flex; flex-direction: column; gap: 0; }
+
+  .section-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: #6b7a99; margin-bottom: 10px; padding-left: 2px;
+  }
+
+  /* node colours */
+  .node-attacker { background:#fff0f0; border-color:#e05c5c; color:#c0392b; }
+  .node-action   { background:#fff8ec; border-color:#f0a830; color:#7a4f00; }
+  .node-vector   { background:#e6fffe; border-color:#2dd4bf; color:#0a3a36; }
+  .node-leak     { background:#ffeaea; border-color:#e05c5c; color:#7a1a1a; }
+  .node-gap      { background:#fff0f0; border-color:#e05c5c; color:#7a1a1a; }
+  .node-warn     { background:#fffbe6; border-color:#d4a000; color:#5a3e00; }
+  .node-system   { background:#eaf2ff; border-color:#5b8dee; color:#1a3a7a; }
+
+  .divider { height: 1px; background: #e4eaf4; margin: 0 0 20px; }
+
+  /* ── MAIN FLOW ── */
+  .main-flow {
+    display: flex; align-items: center; gap: 0;
+    margin-bottom: 20px; background: #f7f9fc;
+    border: 1.5px solid #d8e2f0; border-radius: 12px;
+    padding: 16px 18px; overflow-x: auto;
+  }
+  .flow-step { flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; min-width:108px; }
+  .flow-box {
+    border-radius:8px; padding:9px 10px; font-size:12px;
+    font-weight:600; text-align:center; line-height:1.3; width:100%; border:1.5px solid;
+  }
+  .flow-sub { font-size:10px; color:#8896b0; text-align:center; font-weight:400; line-height:1.3; max-width:115px; }
+  .flow-arr { font-size:20px; color:#aab5cc; flex-shrink:0; padding:0 4px; margin-bottom:20px; }
+  .flow-arr.red  { color:#e05c5c; }
+  .flow-arr.teal { color:#2dd4bf; }
+  .flow-arr.amber{ color:#f0a830; }
+
+  /* ── VECTOR STORE ANATOMY ── */
+  .anatomy-section {
+    background: #f7f9fc;
+    border: 1.5px solid #d8e2f0;
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+  }
+  .anatomy-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: #6b7a99; margin-bottom: 14px; text-align: center;
+  }
+  /* outer: attacker on left, store in middle, impact on right */
+  .anatomy-grid {
+    display: grid;
+    grid-template-columns: 1fr 32px 2fr 32px 1fr;
+    align-items: center;
+    gap: 0;
+  }
+  .anat-col { display: flex; flex-direction: column; gap: 7px; }
+  .anat-arr { font-size: 22px; color: #e05c5c; text-align: center; }
+  .anat-arr.teal { color: #2dd4bf; }
+
+  .anat-box {
+    border-radius: 8px; padding: 9px 10px; font-size: 11.5px;
+    font-weight: 600; text-align: center; line-height: 1.3; border: 1.5px solid;
+  }
+
+  /* the vector store itself — layered box */
+  .store-wrapper {
+    border: 2px solid #2dd4bf;
+    border-radius: 10px;
+    background: #e6fffe;
+    padding: 10px;
+  }
+  .store-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: #0a3a36; text-align: center; margin-bottom: 8px;
+  }
+  .store-layer {
+    border-radius: 7px; padding: 7px 8px; font-size: 11px;
+    font-weight: 600; text-align: center; line-height: 1.3;
+    border: 1.5px solid; margin-bottom: 5px;
+  }
+  .sl-api      { background:#fff8ec; border-color:#f0a830; color:#7a4f00; }
+  .sl-index    { background:#eaf2ff; border-color:#5b8dee; color:#1a3a7a; }
+  .sl-snapshot { background:#fff0f0; border-color:#e05c5c; color:#7a1a1a; }
+  .sl-meta     { background:#f5f0ff; border-color:#a855f7; color:#5a0a8a; }
+
+  .vuln-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px; background: #ffd4d4; color: #7a1a1a;
+    border: 1px solid #e05c5c; border-radius: 4px;
+    padding: 1px 6px; display: inline-block; margin-top: 2px;
+  }
+
+  /* ── COLUMNS ── */
+  .columns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+  .attack-column { background:#f7f9fc; border:1.5px solid #d8e2f0; border-radius:10px; padding:16px 14px; }
+  .attack-column h3 {
+    font-size:11px; font-weight:700; text-transform:uppercase;
+    letter-spacing:1.2px; color:#6b7a99; margin-bottom:12px; text-align:center;
+  }
+  .node {
+    border-radius:8px; padding:9px 12px; font-size:12px;
+    font-weight:600; line-height:1.35; text-align:center;
+    margin-bottom:6px; border:1.5px solid;
+  }
+  .arrow { display:flex; justify-content:center; align-items:center; height:22px; color:#aab5cc; font-size:18px; line-height:1; }
+  .arrow.red   { color:#e05c5c; }
+  .arrow.amber { color:#f0a830; }
+  .arrow.teal  { color:#2dd4bf; }
+
+  .tag {
+    display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:9.5px;
+    background:#0d1f1a; color:#2dd4bf; border-radius:4px;
+    padding:1px 6px; margin-bottom:4px; letter-spacing:0.5px;
+  }
+
+  /* ── IMPACT ROW ── */
+  .impact-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px; }
+  .impact-chip {
+    border-radius:8px; padding:9px 10px; font-size:11.5px;
+    font-weight:600; text-align:center; line-height:1.3; border:1.5px solid;
+  }
+  .chip-red    { background:#fff0f0; border-color:#e05c5c; color:#c0392b; }
+  .chip-amber  { background:#fff8ec; border-color:#f0a830; color:#7a4f00; }
+  .chip-teal   { background:#e6fffe; border-color:#2dd4bf; color:#0a3a36; }
+  .chip-purple { background:#f5f0ff; border-color:#a855f7; color:#5a0a8a; }
+
+  .footer {
+    background:#0d1f1a; color:#80c8c0; font-size:11px;
+    text-align:center; padding:11px 20px; letter-spacing:0.3px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="label">DSGAI13 · Attack Path</div>
+    <h1>Vector Store Platform Data Security</h1>
+    <p>Permissive APIs, unencrypted embeddings, and snapshot flaws enabling index exfiltration and RCE</p>
+  </div>
+
+  <div class="body">
+
+    <!-- PRIMARY FLOW -->
+    <div class="section-label">Primary Attack Flow</div>
+    <div class="main-flow">
+      <div class="flow-step">
+        <div class="flow-box node-attacker">🎯 Attacker</div>
+        <div class="flow-sub">Discovers exposed or misconfigured vector store endpoint</div>
+      </div>
+      <div class="flow-arr teal">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-action">Exploits Weak API / Snapshot Import</div>
+        <div class="flow-sub">Mis-scoped ACL, path traversal, or long-lived credential</div>
+      </div>
+      <div class="flow-arr amber">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-vector">Accesses Raw Embedding Index</div>
+        <div class="flow-sub">k-NN queries sweep index — entire corpus retrievable</div>
+      </div>
+      <div class="flow-arr amber">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-warn">Downloads Full Index or Injects Payload</div>
+        <div class="flow-sub">Exfiltration or RCE via snapshot path traversal</div>
+      </div>
+      <div class="flow-arr red">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-leak">💥 Data Theft or Full Environment Compromise</div>
+        <div class="flow-sub">Downstream index poisoning also enabled</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- VECTOR STORE ANATOMY -->
+    <div class="anatomy-section">
+      <div class="anatomy-title">Vector Store Attack Surface — Entry Points &amp; What They Expose</div>
+      <div class="anatomy-grid">
+
+        <!-- ATTACKER ENTRY POINTS -->
+        <div class="anat-col">
+          <div class="anat-box node-attacker">Mis-scoped ACL<br><span style="font-size:10px;font-weight:400;">Client-side tenant filter only</span></div>
+          <div class="anat-box node-attacker">Long-lived credential<br><span style="font-size:10px;font-weight:400;">No rotation, no scoping</span></div>
+          <div class="anat-box node-attacker">Snapshot import endpoint<br><span style="font-size:10px;font-weight:400;">Unauthenticated or weak auth</span></div>
+          <div class="anat-box node-attacker">k-NN sweep<br><span style="font-size:10px;font-weight:400;">No top-k limit enforced</span></div>
+        </div>
+
+        <div class="anat-arr">→</div>
+
+        <!-- VECTOR STORE LAYERS -->
+        <div class="store-wrapper">
+          <div class="store-label">🗄 Vector Store</div>
+          <div class="store-layer sl-api">Query / Insert API
+            <div><span class="vuln-badge">No authN on endpoint</span></div>
+          </div>
+          <div class="store-layer sl-index">Embedding Index (multi-tenant)
+            <div><span class="vuln-badge">Shared namespace — no server-side scoping</span></div>
+          </div>
+          <div class="store-layer sl-snapshot">Snapshot &amp; Bulk Import
+            <div><span class="vuln-badge">CVE-2024-3584 · CVE-2024-3829</span></div>
+          </div>
+          <div class="store-layer sl-meta">Metadata &amp; Raw Vectors
+            <div><span class="vuln-badge">Unencrypted at rest</span></div>
+          </div>
+        </div>
+
+        <div class="anat-arr">→</div>
+
+        <!-- IMPACT COLUMN -->
+        <div class="anat-col">
+          <div class="anat-box node-leak">Cross-tenant embedding access</div>
+          <div class="anat-box node-leak">Full index download &amp; reconstruction</div>
+          <div class="anat-box node-leak">RCE via path traversal on import</div>
+          <div class="anat-box node-leak">Downstream index poisoning</div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- THREE ATTACK VECTORS -->
+    <div class="section-label">Attack Vectors</div>
+    <div class="columns">
+
+      <!-- VECTOR 1 -->
+      <div class="attack-column">
+        <h3>① Index Exfiltration via k-NN Sweep</h3>
+        <div class="tag">ACL MISCONFIGURATION</div>
+        <div class="node node-attacker">Attacker discovers vector store API — no strong authN</div>
+        <div class="arrow teal">↓</div>
+        <div class="node node-action">Issues high-volume k-NN queries with no top-k limit</div>
+        <div class="arrow">↓</div>
+        <div class="node node-vector">Mis-scoped ACL returns another tenant's raw embeddings</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-warn">Downloads full index — unencrypted vectors at rest</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">Proprietary documents reconstructed from embeddings — entire corpus exposed</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ Client-provided tenant filters are the sole isolation — server-side scoping absent
+        </div>
+      </div>
+
+      <!-- VECTOR 2 -->
+      <div class="attack-column">
+        <h3>② Snapshot Path Traversal → RCE</h3>
+        <div class="tag">CVE-2024-3584 / -3829</div>
+        <div class="node node-attacker">Attacker accesses snapshot import endpoint</div>
+        <div class="arrow">↓</div>
+        <div class="node node-action">Crafts archive with symlinks targeting host config directory</div>
+        <div class="arrow">↓</div>
+        <div class="node node-vector">Snapshot passes format validation ✓ — import executes</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-warn">Path traversal writes modified config — disables auth or plants payload</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">RCE on vector DB host — full environment compromised · index poisoning enabled</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ No auth bypass required — only import endpoint access needed
+        </div>
+      </div>
+
+      <!-- VECTOR 3 -->
+      <div class="attack-column">
+        <h3>③ Multi-Tenant Namespace Confusion</h3>
+        <div class="tag">COLLECTION BLEED</div>
+        <div class="node node-attacker">Attacker targets default-collection fallback behavior</div>
+        <div class="arrow">↓</div>
+        <div class="node node-action">Issues query omitting tenant namespace — server falls back to default collection</div>
+        <div class="arrow">↓</div>
+        <div class="node node-vector">ABAC condition misapplied — returns cross-tenant results</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-warn">Shared caching layer also leaks recently retrieved vectors from other tenants</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">Cross-tenant embedding data exposed — reconstruction of proprietary content possible</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ Namespace / collection confusion edge cases not covered by automated tests
+        </div>
+      </div>
+
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- IMPACT -->
+    <div class="section-label">Resulting Impact</div>
+    <div class="impact-row">
+      <div class="impact-chip chip-red">🔓 Cross-Tenant Data Exposure<br><span style="font-weight:400;font-size:10.5px;">Raw embeddings from other tenants accessible</span></div>
+      <div class="impact-chip chip-teal">💣 Full Environment Compromise<br><span style="font-weight:400;font-size:10.5px;">RCE via snapshot path traversal</span></div>
+      <div class="impact-chip chip-amber">☠️ Downstream Index Poisoning<br><span style="font-weight:400;font-size:10.5px;">Compromised host enables index tampering</span></div>
+      <div class="impact-chip chip-purple">🔄 Lifecycle Gap<br><span style="font-weight:400;font-size:10.5px;">Deleted content persists in snapshots &amp; backups</span></div>
+    </div>
+
+  </div><!-- /body -->
+
+  <div class="footer">CVE-2024-3584 · CVE-2024-3829 (Qdrant Snapshot Path Traversal / Arbitrary Upload → RCE) · Cross-ref: DSGAI04 Embedding Inversion · DSGAI05 Snapshot Integrity</div>
+</div>
+</body>
+</html>

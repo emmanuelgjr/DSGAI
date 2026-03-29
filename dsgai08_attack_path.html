@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSGAI08 — Non-Compliance & Regulatory Violations: Attack Path</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: #f0f4f8;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 24px;
+    min-height: 100vh;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.13);
+    width: 880px;
+    max-width: 100%;
+  }
+
+  .header {
+    background: #1e1a2e;
+    color: #fff;
+    padding: 28px 36px 22px;
+    text-align: center;
+  }
+  .header .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: #f06090;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .header h1 { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+  .header p  { font-size: 13px; color: #c8a8c0; font-weight: 400; }
+
+  .body { padding: 32px 36px 28px; display: flex; flex-direction: column; gap: 0; }
+
+  .section-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: #6b7a99; margin-bottom: 10px; padding-left: 2px;
+  }
+
+  /* node colours */
+  .node-tech   { background:#eaf2ff; border-color:#5b8dee; color:#1a3a7a; }
+  .node-action { background:#fff8ec; border-color:#f0a830; color:#7a4f00; }
+  .node-gap    { background:#fff0f0; border-color:#e05c5c; color:#7a1a1a; }
+  .node-reg    { background:#fdf0ff; border-color:#c060d0; color:#5a0a6a; }
+  .node-leak   { background:#ffeaea; border-color:#e05c5c; color:#7a1a1a; }
+  .node-warn   { background:#fffbe6; border-color:#d4a000; color:#5a3e00; }
+  .node-ok     { background:#f0fff4; border-color:#27ae60; color:#145a32; }
+
+  .divider { height: 1px; background: #e4eaf4; margin: 0 0 20px; }
+
+  /* ── MAIN FLOW ── */
+  .main-flow {
+    display: flex; align-items: center; gap: 0;
+    margin-bottom: 20px; background: #f7f9fc;
+    border: 1.5px solid #d8e2f0; border-radius: 12px;
+    padding: 16px 18px; overflow-x: auto;
+  }
+  .flow-step { flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; min-width:108px; }
+  .flow-box {
+    border-radius:8px; padding:9px 10px; font-size:12px;
+    font-weight:600; text-align:center; line-height:1.3; width:100%; border:1.5px solid;
+  }
+  .flow-sub { font-size:10px; color:#8896b0; text-align:center; font-weight:400; line-height:1.3; max-width:115px; }
+  .flow-arr { font-size:20px; color:#aab5cc; flex-shrink:0; padding:0 4px; margin-bottom:20px; }
+  .flow-arr.red   { color:#e05c5c; }
+  .flow-arr.amber { color:#f0a830; }
+  .flow-arr.pink  { color:#f06090; }
+
+  /* ── THREE FAILURE PATTERNS ── */
+  .columns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+  .attack-column { background:#f7f9fc; border:1.5px solid #d8e2f0; border-radius:10px; padding:16px 14px; }
+  .attack-column h3 {
+    font-size:11px; font-weight:700; text-transform:uppercase;
+    letter-spacing:1.2px; color:#6b7a99; margin-bottom:12px; text-align:center;
+  }
+  .node {
+    border-radius:8px; padding:9px 12px; font-size:12px;
+    font-weight:600; line-height:1.35; text-align:center;
+    margin-bottom:6px; border:1.5px solid;
+  }
+  .arrow { display:flex; justify-content:center; align-items:center; height:22px; color:#aab5cc; font-size:18px; line-height:1; }
+  .arrow.red   { color:#e05c5c; }
+  .arrow.amber { color:#f0a830; }
+  .arrow.pink  { color:#f06090; }
+
+  .tag {
+    display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:9.5px;
+    background:#1e1a2e; color:#f06090; border-radius:4px;
+    padding:1px 6px; margin-bottom:4px; letter-spacing:0.5px;
+  }
+
+  /* ── REGULATORY CONSEQUENCE CHAIN ── */
+  .reg-section {
+    background: #fdf5ff;
+    border: 1.5px solid #c060d0;
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+  }
+  .reg-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: #6b3a7a; margin-bottom: 14px; text-align: center;
+  }
+  .reg-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .reg-card {
+    border-radius: 8px; border: 1.5px solid; padding: 11px 11px 9px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .rc-1 { background:#fff0f0; border-color:#e05c5c; }
+  .rc-2 { background:#fff8ec; border-color:#f0a830; }
+  .rc-3 { background:#fdf0ff; border-color:#c060d0; }
+
+  .reg-card-title { font-size:11.5px; font-weight:700; line-height:1.3; }
+  .rc-1 .reg-card-title { color:#7a1a1a; }
+  .rc-2 .reg-card-title { color:#7a4f00; }
+  .rc-3 .reg-card-title { color:#5a0a6a; }
+
+  .reg-card-body { font-size:10.5px; color:#555; line-height:1.4; font-weight:400; }
+  .reg-regs {
+    font-family:'IBM Plex Mono',monospace; font-size:9.5px;
+    color:#888; margin-top:3px; line-height:1.5;
+  }
+
+  /* ── ERASURE GAP DIAGRAM ── */
+  .erasure-section {
+    background: #f7f9fc;
+    border: 1.5px solid #d8e2f0;
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+  }
+  .erasure-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: #6b7a99; margin-bottom: 14px; text-align: center;
+  }
+  .erasure-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    align-items: start;
+  }
+  .e-col { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .e-box {
+    border-radius: 7px; padding: 8px 8px; font-size: 11px;
+    font-weight: 600; text-align: center; line-height: 1.3;
+    border: 1.5px solid; width: 100%;
+  }
+  .e-status {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9.5px; border-radius: 4px;
+    padding: 2px 7px; font-weight: 700; text-align: center;
+  }
+  .status-ok   { background:#d4f5e4; color:#145a32; border:1px solid #27ae60; }
+  .status-fail { background:#ffd4d4; color:#7a1a1a; border:1px solid #e05c5c; }
+  .status-warn { background:#fff3cd; color:#7a4f00; border:1px solid #d4a000; }
+
+  /* ── IMPACT ROW ── */
+  .impact-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px; }
+  .impact-chip {
+    border-radius:8px; padding:9px 10px; font-size:11.5px;
+    font-weight:600; text-align:center; line-height:1.3; border:1.5px solid;
+  }
+  .chip-red    { background:#fff0f0; border-color:#e05c5c; color:#c0392b; }
+  .chip-amber  { background:#fff8ec; border-color:#f0a830; color:#7a4f00; }
+  .chip-pink   { background:#fdf0ff; border-color:#c060d0; color:#5a0a6a; }
+  .chip-blue   { background:#eaf2ff; border-color:#5b8dee; color:#1a3a7a; }
+
+  .footer {
+    background:#1e1a2e; color:#c8a8c0; font-size:11px;
+    text-align:center; padding:11px 20px; letter-spacing:0.3px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="label">DSGAI08 · Attack Path</div>
+    <h1>Non-Compliance &amp; Regulatory Violations</h1>
+    <p>Technical risks that go unmitigated and intersect with enforceable legal obligations</p>
+  </div>
+
+  <div class="body">
+
+    <!-- PRIMARY FLOW -->
+    <div class="section-label">Primary Violation Flow</div>
+    <div class="main-flow">
+      <div class="flow-step">
+        <div class="flow-box node-tech">Technical Risk Materializes</div>
+        <div class="flow-sub">Leakage, erasure gap, or lineage absence from DSGAI01/07</div>
+      </div>
+      <div class="flow-arr">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-action">Data Subject Exercises Right</div>
+        <div class="flow-sub">Erasure request, access request, or regulator inquiry</div>
+      </div>
+      <div class="flow-arr amber">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-gap">Org Cannot Demonstrate Compliance</div>
+        <div class="flow-sub">No lineage · embeddings persist · unlearning not feasible</div>
+      </div>
+      <div class="flow-arr pink">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-reg">Regulatory Investigation Opened</div>
+        <div class="flow-sub">Supervisory authority requests evidence — none can be produced</div>
+      </div>
+      <div class="flow-arr red">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-leak">💥 Enforcement Action</div>
+        <div class="flow-sub">Fines · injunctions · model suspension · market prohibition</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- THREE FAILURE PATTERNS -->
+    <div class="section-label">Three Regulatory Failure Patterns</div>
+    <div class="columns">
+
+      <!-- PATTERN 1 -->
+      <div class="attack-column">
+        <h3>① Unlawful Basis &amp; Consent Failure</h3>
+        <div class="tag">UPSTREAM FAILURE</div>
+        <div class="node node-tech">Training data collected without documented lawful basis</div>
+        <div class="arrow">↓</div>
+        <div class="node node-action">Consent never captured or since expired</div>
+        <div class="arrow">↓</div>
+        <div class="node node-action">Processing purpose not disclosed at collection</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-gap">Data already ingested into training pipeline — processing cannot be unwound</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">Data subject exercises rights → no lawful basis can be demonstrated</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ GDPR Art. 5 &amp; 6 · CCPA opt-out · HIPAA minimum necessary
+        </div>
+      </div>
+
+      <!-- PATTERN 2 -->
+      <div class="attack-column">
+        <h3>② The Erasure Gap</h3>
+        <div class="tag">GDPR ART. 17</div>
+        <div class="node node-tech">GDPR erasure request received</div>
+        <div class="arrow">↓</div>
+        <div class="node node-ok">Raw record deleted from CRM &amp; data lake ✓</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-gap">Embedding persists in vector store ✗</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-gap">Fine-tuned weights encode deleted record ✗</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">Model continues surfacing deleted content in production — erasure structurally incomplete</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ Machine unlearning cannot fully remediate — GenAI-specific compliance gap
+        </div>
+      </div>
+
+      <!-- PATTERN 3 -->
+      <div class="attack-column">
+        <h3>③ Lineage Absence at Obligation Point</h3>
+        <div class="tag">ARCHITECTURE FAILURE</div>
+        <div class="node node-tech">Regulator requests proof of lawful basis for training dataset</div>
+        <div class="arrow">↓</div>
+        <div class="node node-gap">No artifact linking training run to dataset version</div>
+        <div class="arrow">↓</div>
+        <div class="node node-gap">No consent records mapped to specific training records</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-gap">Cannot scope blast radius of compromised data source</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">Cannot prove compliance · Cannot scope remediation · Cannot execute targeted retraining</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ Not a legal problem — a technical architecture failure that blocks legal remedy
+        </div>
+      </div>
+
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ERASURE GAP VISUAL -->
+    <div class="erasure-section">
+      <div class="erasure-title">The Erasure Gap — What "Deletion" Actually Covers vs. What It Misses</div>
+      <div class="erasure-grid">
+
+        <div class="e-col">
+          <div class="e-box node-tech">CRM &amp; Data Lake</div>
+          <div class="e-status status-ok">DELETED ✓</div>
+          <div style="font-size:10px;color:#888;text-align:center;line-height:1.3;margin-top:2px;">Org believes erasure complete here</div>
+        </div>
+
+        <div class="e-col">
+          <div class="e-box node-gap">Vector Store Embeddings</div>
+          <div class="e-status status-fail">PERSISTS ✗</div>
+          <div style="font-size:10px;color:#888;text-align:center;line-height:1.3;margin-top:2px;">Not linked to source — not purged</div>
+        </div>
+
+        <div class="e-col">
+          <div class="e-box node-gap">Fine-tuned Weights / LoRA</div>
+          <div class="e-status status-fail">PERSISTS ✗</div>
+          <div style="font-size:10px;color:#888;text-align:center;line-height:1.3;margin-top:2px;">Encoded in weights — unlearning incomplete</div>
+        </div>
+
+        <div class="e-col">
+          <div class="e-box node-gap">Nightly Backups</div>
+          <div class="e-status status-warn">AT RISK ⚠</div>
+          <div style="font-size:10px;color:#888;text-align:center;line-height:1.3;margin-top:2px;">Retains raw content — re-indexing can resurrect</div>
+        </div>
+
+        <div class="e-col">
+          <div class="e-box node-gap">Cached Retrievals &amp; Logs</div>
+          <div class="e-status status-fail">PERSISTS ✗</div>
+          <div style="font-size:10px;color:#888;text-align:center;line-height:1.3;margin-top:2px;">Not in scope of standard erasure workflow</div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- REGULATORY CONSEQUENCES -->
+    <div class="reg-section">
+      <div class="reg-title">Regulatory Consequence Layer — Frameworks Triggered</div>
+      <div class="reg-grid">
+
+        <div class="reg-card rc-1">
+          <div class="reg-card-title">🔴 Immediate Enforcement Risk</div>
+          <div class="reg-card-body">Fines, civil liability, injunctions requiring model suspension or deletion. Supervisory authority investigation opened on failure to demonstrate erasure.</div>
+          <div class="reg-regs">GDPR Art. 17 · CCPA/CPRA · HIPAA</div>
+        </div>
+
+        <div class="reg-card rc-2">
+          <div class="reg-card-title">🟡 Market Access Risk</div>
+          <div class="reg-card-body">High-risk AI systems prohibited from EU market if Article 10 training data governance obligations cannot be demonstrated. Deadline: August 2026.</div>
+          <div class="reg-regs">EU AI Act Art. 10 · Colorado AI Act</div>
+        </div>
+
+        <div class="reg-card rc-3">
+          <div class="reg-card-title">🟣 Ongoing Processing Liability</div>
+          <div class="reg-card-body">Model remains in production during investigation, continuing to surface deleted records. Each inference may constitute a fresh violation while erasure is unverified.</div>
+          <div class="reg-regs">GDPR Art. 5, 22, 30 · HIPAA breach notification</div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- IMPACT -->
+    <div class="section-label">Resulting Impact</div>
+    <div class="impact-row">
+      <div class="impact-chip chip-red">⚖️ Regulatory Fines<br><span style="font-weight:400;font-size:10.5px;">GDPR · HIPAA · CCPA enforcement orders</span></div>
+      <div class="impact-chip chip-pink">🚫 Model Suspension<br><span style="font-weight:400;font-size:10.5px;">Injunction or EU market prohibition</span></div>
+      <div class="impact-chip chip-amber">📋 DSR Rights Violated<br><span style="font-weight:400;font-size:10.5px;">Erasure structurally incomplete in AI systems</span></div>
+      <div class="impact-chip chip-blue">🔍 Unresolvable Audit Gap<br><span style="font-weight:400;font-size:10.5px;">No lineage = cannot prove compliance</span></div>
+    </div>
+
+  </div><!-- /body -->
+
+  <div class="footer">No CVE — Downstream Consequence of Technical Risk Materialization · GDPR Art. 5, 17, 22, 30 · HIPAA · CCPA/CPRA · EU AI Act Art. 10 (Aug 2026) · Cross-ref: DSGAI01, DSGAI07</div>
+</div>
+</body>
+</html>

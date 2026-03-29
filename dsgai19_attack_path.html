@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSGAI19 — Human-in-the-Loop & Labeler Overexposure: Attack Path</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: #f0f4f8;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 24px;
+    min-height: 100vh;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.13);
+    width: 880px;
+    max-width: 100%;
+  }
+
+  .header {
+    background: #1a100f;
+    color: #fff;
+    padding: 28px 36px 22px;
+    text-align: center;
+  }
+  .header .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: #f97316;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .header h1 { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+  .header p  { font-size: 13px; color: #c8a898; font-weight: 400; }
+
+  .body { padding: 32px 36px 28px; display: flex; flex-direction: column; gap: 0; }
+
+  .section-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: #6b7a99; margin-bottom: 10px; padding-left: 2px;
+  }
+
+  /* node colours */
+  .node-org      { background:#eaf2ff; border-color:#5b8dee; color:#1a3a7a; }
+  .node-action   { background:#fff8ec; border-color:#f0a830; color:#7a4f00; }
+  .node-vendor   { background:#fff4ee; border-color:#f97316; color:#7a2f00; }
+  .node-labeler  { background:#fffbe6; border-color:#d4a000; color:#5a3e00; }
+  .node-leak     { background:#ffeaea; border-color:#e05c5c; color:#7a1a1a; }
+  .node-gap      { background:#fff0f0; border-color:#e05c5c; color:#7a1a1a; }
+  .node-warn     { background:#fffbe6; border-color:#d4a000; color:#5a3e00; }
+  .node-ok       { background:#f0fff4; border-color:#27ae60; color:#145a32; }
+
+  .divider { height: 1px; background: #e4eaf4; margin: 0 0 20px; }
+
+  /* ── MAIN FLOW ── */
+  .main-flow {
+    display: flex; align-items: center; gap: 0;
+    margin-bottom: 20px; background: #f7f9fc;
+    border: 1.5px solid #d8e2f0; border-radius: 12px;
+    padding: 16px 18px; overflow-x: auto;
+  }
+  .flow-step { flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; min-width:108px; }
+  .flow-box {
+    border-radius:8px; padding:9px 10px; font-size:12px;
+    font-weight:600; text-align:center; line-height:1.3; width:100%; border:1.5px solid;
+  }
+  .flow-sub { font-size:10px; color:#8896b0; text-align:center; font-weight:400; line-height:1.3; max-width:115px; }
+  .flow-arr { font-size:20px; color:#aab5cc; flex-shrink:0; padding:0 4px; margin-bottom:20px; }
+  .flow-arr.red    { color:#e05c5c; }
+  .flow-arr.amber  { color:#f0a830; }
+  .flow-arr.orange { color:#f97316; }
+
+  /* ── LABELING PIPELINE VISUAL ── */
+  .pipeline-section {
+    background: #f7f9fc;
+    border: 1.5px solid #d8e2f0;
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+  }
+  .pipeline-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: #6b7a99; margin-bottom: 14px; text-align: center;
+  }
+
+  /* What labelers see — the "hit card" */
+  .hit-compare {
+    display: grid;
+    grid-template-columns: 1fr 28px 1fr;
+    align-items: start;
+    gap: 0;
+    margin-bottom: 12px;
+  }
+  .hc-col { display: flex; flex-direction: column; }
+  .hc-header {
+    font-size: 11px; font-weight: 700; text-align: center;
+    border-radius: 6px 6px 0 0; padding: 7px 10px; border: 1.5px solid;
+    border-bottom: none;
+  }
+  .hc-ok-h  { background:#e0faf0; border-color:#27ae60; color:#145a32; }
+  .hc-bad-h { background:#ffd4d4; border-color:#e05c5c; color:#7a1a1a; }
+  .hc-body  {
+    border: 1.5px solid; border-radius: 0 0 8px 8px;
+    padding: 10px 12px; font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px; line-height: 1.7;
+  }
+  .hc-ok-b  { background:#f0fff8; border-color:#27ae60; color:#064e3b; }
+  .hc-bad-b { background:#fff8f8; border-color:#e05c5c; color:#2d1010; }
+  .field-ok  { color:#145a32; font-weight:700; }
+  .field-bad { color:#e05c5c; font-weight:700; }
+  .field-dim { color:#888; font-weight:400; font-size:9.5px; }
+
+  .hc-badge {
+    font-family: 'IBM Plex Mono', monospace; font-size: 9px;
+    border-radius: 4px; padding: 2px 8px; font-weight: 700;
+    margin-top: 5px; display: block; text-align: center;
+  }
+  .badge-ok  { background:#d4f5e4; color:#145a32; border:1px solid #27ae60; }
+  .badge-bad { background:#ffd4d4; color:#7a1a1a; border:1px solid #e05c5c; }
+
+  .hc-vs { font-size: 20px; color: #e05c5c; text-align: center; padding-top: 44px; font-weight: 700; }
+
+  /* crowd platform risk row */
+  .platform-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .plat-card {
+    border-radius: 8px; border: 1.5px solid; padding: 10px 10px 8px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .pc-1 { background:#fff0f0; border-color:#e05c5c; }
+  .pc-2 { background:#fff4ee; border-color:#f97316; }
+  .pc-3 { background:#fffbe6; border-color:#d4a000; }
+
+  .plat-title { font-size: 11.5px; font-weight: 700; line-height: 1.2; }
+  .pc-1 .plat-title { color:#c0392b; }
+  .pc-2 .plat-title { color:#7a2f00; }
+  .pc-3 .plat-title { color:#5a3e00; }
+  .plat-body  { font-size: 10.5px; color:#555; line-height: 1.35; font-weight: 400; }
+
+  /* ── COLUMNS ── */
+  .columns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+  .attack-column { background:#f7f9fc; border:1.5px solid #d8e2f0; border-radius:10px; padding:16px 14px; }
+  .attack-column h3 {
+    font-size:11px; font-weight:700; text-transform:uppercase;
+    letter-spacing:1.2px; color:#6b7a99; margin-bottom:12px; text-align:center;
+  }
+  .node {
+    border-radius:8px; padding:9px 12px; font-size:12px;
+    font-weight:600; line-height:1.35; text-align:center;
+    margin-bottom:6px; border:1.5px solid;
+  }
+  .arrow { display:flex; justify-content:center; align-items:center; height:22px; color:#aab5cc; font-size:18px; line-height:1; }
+  .arrow.red    { color:#e05c5c; }
+  .arrow.amber  { color:#f0a830; }
+  .arrow.orange { color:#f97316; }
+
+  .tag {
+    display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:9.5px;
+    background:#1a100f; color:#f97316; border-radius:4px;
+    padding:1px 6px; margin-bottom:4px; letter-spacing:0.5px;
+  }
+
+  /* ── IMPACT ROW ── */
+  .impact-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px; }
+  .impact-chip {
+    border-radius:8px; padding:9px 10px; font-size:11.5px;
+    font-weight:600; text-align:center; line-height:1.3; border:1.5px solid;
+  }
+  .chip-red    { background:#fff0f0; border-color:#e05c5c; color:#c0392b; }
+  .chip-amber  { background:#fff8ec; border-color:#f0a830; color:#7a4f00; }
+  .chip-orange { background:#fff4ee; border-color:#f97316; color:#7a2f00; }
+  .chip-blue   { background:#eaf2ff; border-color:#5b8dee; color:#1a3a7a; }
+
+  .footer {
+    background:#1a100f; color:#c8a898; font-size:11px;
+    text-align:center; padding:11px 20px; letter-spacing:0.3px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="label">DSGAI19 · Attack Path</div>
+    <h1>Human-in-the-Loop &amp; Labeler Overexposure</h1>
+    <p>RLHF and annotation pipelines expose raw sensitive data to large, poorly-controlled human populations</p>
+  </div>
+
+  <div class="body">
+
+    <!-- PRIMARY FLOW -->
+    <div class="section-label">Primary Exposure Flow</div>
+    <div class="main-flow">
+      <div class="flow-step">
+        <div class="flow-box node-org">📦 Org Exports Labeling Batch</div>
+        <div class="flow-sub">Support chats, PHI, runbooks — un-minimized, full records</div>
+      </div>
+      <div class="flow-arr orange">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-vendor">Labeling Vendor / Crowd Platform</div>
+        <div class="flow-sub">Weak device controls, no monitoring, NDAs not enforced</div>
+      </div>
+      <div class="flow-arr amber">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-labeler">👥 Labelers See Full Sensitive Records</div>
+        <div class="flow-sub">Names, account numbers, PHI, internal system URLs visible</div>
+      </div>
+      <div class="flow-arr amber">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-warn">Insider Exfiltration or Endpoint Compromise</div>
+        <div class="flow-sub">Screenshot, side-work sale, or malware on labeler laptop</div>
+      </div>
+      <div class="flow-arr red">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-leak">💥 Sensitive Data Exposed at Scale</div>
+        <div class="flow-sub">Thousands of records leaked via an untrusted human tier</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- LABELING PIPELINE VISUAL -->
+    <div class="pipeline-section">
+      <div class="pipeline-title">The Overexposure Problem — What Labelers Actually Need vs. What They Receive</div>
+
+      <div class="hit-compare">
+        <div class="hc-col">
+          <div class="hc-header hc-ok-h">✓ Minimized Labeling Task — What's Required</div>
+          <div class="hc-body hc-ok-b">
+            <span class="field-ok">task:</span> "Classify tone: positive / neutral / negative"<br>
+            <span class="field-ok">text:</span> "I'm having trouble with my account..."<br>
+            <span class="field-ok">resolution:</span> "[MASKED]"<br>
+            <span class="field-ok">customer_id:</span> "[TOKENIZED]"<br>
+            <span class="field-dim">// names, PHI, URLs — not required for task</span>
+          </div>
+          <span class="hc-badge badge-ok">TASK-SCOPED · IDENTIFIERS MASKED · SAFE FOR CROWD PLATFORM</span>
+        </div>
+
+        <div class="hc-vs">vs</div>
+
+        <div class="hc-col">
+          <div class="hc-header hc-bad-h">✗ Actual Export — What Labelers Receive</div>
+          <div class="hc-body hc-bad-b">
+            <span class="field-ok">task:</span> "Classify tone: positive / neutral / negative"<br>
+            <span class="field-bad">customer_name:</span> "Jane Doe"<br>
+            <span class="field-bad">account_number:</span> "4521-XXXX-1234"<br>
+            <span class="field-bad">dob:</span> "1982-04-15" · <span class="field-bad">ssn_last4:</span> "3821"<br>
+            <span class="field-bad">system_url:</span> "https://internal-admin.corp/..."<br>
+            <span class="field-bad">runbook:</span> "For escalations, use token: ey..."<br>
+            <span class="field-dim">// full record exported — un-minimized by default</span>
+          </div>
+          <span class="hc-badge badge-bad">FULL PHI + CREDENTIALS VISIBLE TO CROWD LABELER — NO AUDIT TRAIL</span>
+        </div>
+      </div>
+
+      <!-- PLATFORM RISK ROW -->
+      <div class="platform-row">
+        <div class="plat-card pc-1">
+          <div class="plat-title">🚨 Insider Threat</div>
+          <div class="plat-body">Labeler screenshots high-value records for side work or sale. No per-sample audit trail linking data to the reviewer. Exfiltration discovered only when data surfaces externally.</div>
+        </div>
+        <div class="plat-card pc-2">
+          <div class="plat-title">💻 Compromised Endpoint</div>
+          <div class="plat-body">Malware on labeler laptop silently copies task data in background. Vendor device controls absent or unverified. Entire batch exposed without the labeler's knowledge.</div>
+        </div>
+        <div class="plat-card pc-3">
+          <div class="plat-title">👁 Regulatory Surprise</div>
+          <div class="plat-body">Users learn their "private" conversations were manually reviewed at scale. Reputational and GDPR/HIPAA exposure when minimization was absent and purpose wasn't disclosed at collection.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- THREE ATTACK VECTORS -->
+    <div class="section-label">Attack Vectors</div>
+    <div class="columns">
+
+      <!-- VECTOR 1 -->
+      <div class="attack-column">
+        <h3>① Crowd Platform PHI Export</h3>
+        <div class="tag">INSIDER EXFILTRATION</div>
+        <div class="node node-org">Company exports 10,000 support chats for tone labeling</div>
+        <div class="arrow orange">↓</div>
+        <div class="node node-vendor">Batch contains full PHI, account numbers, system URLs — no minimization</div>
+        <div class="arrow">↓</div>
+        <div class="node node-labeler">Outsourced to crowd platform — hundreds of labelers see full records</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-warn">One labeler screenshots records for sale — no per-sample audit trail</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">PHI of thousands of patients sold or leaked — discovered when data surfaces externally</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ Task only required tone label — full record was never necessary
+        </div>
+      </div>
+
+      <!-- VECTOR 2 -->
+      <div class="attack-column">
+        <h3>② Malware on Labeler Endpoint</h3>
+        <div class="tag">ENDPOINT COMPROMISE</div>
+        <div class="node node-org">RLHF batch containing internal runbooks sent to vendor</div>
+        <div class="arrow orange">↓</div>
+        <div class="node node-vendor">Vendor device controls not contractually required — unverified</div>
+        <div class="arrow">↓</div>
+        <div class="node node-labeler">Labeler's laptop infected with infostealer malware</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-warn">Malware silently copies all task data — system URLs, internal tokens captured</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">Internal credentials and runbooks exfiltrated — entire batch exposed without labeler's knowledge</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ No endpoint monitoring or session recording — compromise undetected
+        </div>
+      </div>
+
+      <!-- VECTOR 3 -->
+      <div class="attack-column">
+        <h3>③ Task Field Creep Over Time</h3>
+        <div class="tag">SCOPE EXPANSION</div>
+        <div class="node node-ok">Initial labeling task: tone only — names masked ✓</div>
+        <div class="arrow">↓</div>
+        <div class="node node-action">New annotation requirement added — "include resolution context"</div>
+        <div class="arrow">↓</div>
+        <div class="node node-warn">Resolution field contains PHI and internal system references — no privacy review triggered</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-gap">Framework default re-includes full record for new task type — minimization silently broken</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">Sensitive data now exposed at scale — original approved scope no longer applies</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ No periodic labeling pipeline privacy audit — field creep undetected until incident
+        </div>
+      </div>
+
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- IMPACT -->
+    <div class="section-label">Resulting Impact</div>
+    <div class="impact-row">
+      <div class="impact-chip chip-red">👥 Mass Data Exposure to Uncontrolled Population<br><span style="font-weight:400;font-size:10.5px;">Hundreds of labelers see full sensitive records</span></div>
+      <div class="impact-chip chip-orange">🎯 Targeted Insider Exfiltration<br><span style="font-weight:400;font-size:10.5px;">High-value conversations sold or leaked for side work</span></div>
+      <div class="impact-chip chip-amber">⚖️ Regulatory &amp; Reputational Risk<br><span style="font-weight:400;font-size:10.5px;">Users unaware private chats manually reviewed at scale</span></div>
+      <div class="impact-chip chip-blue">📋 No Audit Trail<br><span style="font-weight:400;font-size:10.5px;">Exfiltration discovered only when data surfaces externally</span></div>
+    </div>
+
+  </div><!-- /body -->
+
+  <div class="footer">No CVE — People &amp; Process Exposure · Label DP for RLHF: Chowdhury et al. arXiv:2310.19733 · Wu et al. OpenReview · Cross-ref: DSGAI01 Leakage · DSGAI07 Lifecycle · DSGAI08 Compliance</div>
+</div>
+</body>
+</html>

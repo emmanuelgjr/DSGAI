@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OWASP GenAI Data Security — DSGAI01–21 Cheat Sheet</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: #0e1117;
+    color: #e8eaf0;
+    padding: 32px 24px 48px;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .page-header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+  .page-header .kicker {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: #6b7a99; margin-bottom: 10px;
+  }
+  .page-header h1 {
+    font-size: 30px; font-weight: 700; color: #fff;
+    margin-bottom: 8px; letter-spacing: -0.5px;
+  }
+  .page-header p {
+    font-size: 14px; color: #8896b0; max-width: 640px; margin: 0 auto;
+  }
+
+  /* ── CATEGORY LEGEND ── */
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    justify-content: center; margin-bottom: 32px;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 11px; color: #8896b0;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .legend-dot {
+    width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+  }
+
+  /* ── GRID ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    max-width: 1120px;
+    margin: 0 auto;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: #161b27;
+    border-radius: 12px;
+    border: 1.5px solid #252d40;
+    padding: 16px 16px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: border-color 0.15s;
+  }
+  .card:hover { border-color: #404860; }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .card-id {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.5px; white-space: nowrap;
+    padding: 3px 8px; border-radius: 5px;
+    flex-shrink: 0; margin-top: 1px;
+  }
+
+  .card-title {
+    font-size: 13.5px; font-weight: 700; color: #f0f4ff;
+    line-height: 1.3;
+  }
+
+  .card-tagline {
+    font-size: 11.5px; color: #7a8aaa; line-height: 1.45;
+    font-weight: 400;
+  }
+
+  /* flow */
+  .card-flow {
+    display: flex; align-items: center; flex-wrap: wrap;
+    gap: 3px;
+  }
+  .flow-node {
+    font-size: 10px; font-weight: 600;
+    padding: 3px 7px; border-radius: 4px;
+    line-height: 1.2; white-space: nowrap;
+  }
+  .flow-sep { color: #404860; font-size: 13px; }
+
+  /* vectors */
+  .card-vectors {
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .vector-item {
+    font-size: 10.5px; color: #7a8aaa; line-height: 1.3;
+    display: flex; gap: 6px;
+  }
+  .vector-item::before {
+    content: '→'; color: #404860; flex-shrink: 0;
+  }
+
+  /* impact + cve row */
+  .card-bottom {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    gap: 8px; margin-top: 2px;
+  }
+  .impact-tags {
+    display: flex; flex-wrap: wrap; gap: 4px;
+  }
+  .impact-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px; font-weight: 600;
+    padding: 2px 6px; border-radius: 3px;
+    border: 1px solid;
+  }
+  .cve-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px; font-weight: 700;
+    padding: 2px 7px; border-radius: 4px;
+    white-space: nowrap; flex-shrink: 0;
+    background: #1e1010; border: 1px solid #e05c5c; color: #f87171;
+  }
+  .no-cve {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px; color: #404860;
+    flex-shrink: 0;
+  }
+
+  /* ── CATEGORY COLOUR SYSTEMS ── */
+  /* data-cat attr drives id pill + flow + impact tag colours */
+
+  /* LEAKAGE */
+  [data-cat="leakage"] .card-id        { background:#2a1520; color:#f87171; }
+  [data-cat="leakage"] .flow-node      { background:#2a1520; color:#f87171; border:1px solid #7a2a2a; }
+  [data-cat="leakage"] .impact-tag     { background:#2a1520; border-color:#7a2a2a; color:#f87171; }
+
+  /* IDENTITY */
+  [data-cat="identity"] .card-id       { background:#1a1530; color:#a78bfa; }
+  [data-cat="identity"] .flow-node     { background:#1a1530; color:#a78bfa; border:1px solid #4a3a8a; }
+  [data-cat="identity"] .impact-tag    { background:#1a1530; border-color:#4a3a8a; color:#a78bfa; }
+
+  /* GOVERNANCE */
+  [data-cat="governance"] .card-id     { background:#1a1a0d; color:#facc15; }
+  [data-cat="governance"] .flow-node   { background:#1a1a0d; color:#facc15; border:1px solid #7a6a00; }
+  [data-cat="governance"] .impact-tag  { background:#1a1a0d; border-color:#7a6a00; color:#facc15; }
+
+  /* POISONING */
+  [data-cat="poisoning"] .card-id      { background:#1a1012; color:#fb923c; }
+  [data-cat="poisoning"] .flow-node    { background:#1a1012; color:#fb923c; border:1px solid #7a3a10; }
+  [data-cat="poisoning"] .impact-tag   { background:#1a1012; border-color:#7a3a10; color:#fb923c; }
+
+  /* INFRASTRUCTURE */
+  [data-cat="infra"] .card-id          { background:#0d1f20; color:#2dd4bf; }
+  [data-cat="infra"] .flow-node        { background:#0d1f20; color:#2dd4bf; border:1px solid #0a5a56; }
+  [data-cat="infra"] .impact-tag       { background:#0d1f20; border-color:#0a5a56; color:#2dd4bf; }
+
+  /* COMPLIANCE */
+  [data-cat="compliance"] .card-id     { background:#1e1028; color:#e879f9; }
+  [data-cat="compliance"] .flow-node   { background:#1e1028; color:#e879f9; border:1px solid #6a2080; }
+  [data-cat="compliance"] .impact-tag  { background:#1e1028; border-color:#6a2080; color:#e879f9; }
+
+  /* ATTACK */
+  [data-cat="attack"] .card-id         { background:#0f1a14; color:#4ade80; }
+  [data-cat="attack"] .flow-node       { background:#0f1a14; color:#4ade80; border:1px solid #1a5a2a; }
+  [data-cat="attack"] .impact-tag      { background:#0f1a14; border-color:#1a5a2a; color:#4ade80; }
+
+  /* ── FOOTER ── */
+  .page-footer {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 11px; color: #404860;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="kicker">OWASP GenAI Data Security Framework · 2025</div>
+  <h1>DSGAI01 – DSGAI21 Cheat Sheet</h1>
+  <p>21 threat entries covering the full GenAI data attack surface — from training-time poisoning to inference-time reconstruction, compliance failures, and model IP theft.</p>
+</div>
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#f87171"></div>Leakage</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div>Identity &amp; Access</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#facc15"></div>Governance &amp; Lifecycle</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#fb923c"></div>Poisoning &amp; Integrity</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#2dd4bf"></div>Infrastructure</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#e879f9"></div>Compliance &amp; Regulatory</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#4ade80"></div>Adversarial Attacks</div>
+</div>
+
+<div class="grid">
+
+  <!-- 01 -->
+  <div class="card" data-cat="leakage">
+    <div class="card-top">
+      <div class="card-id">DSGAI01</div>
+      <div class="card-title">Sensitive Data Leakage in LLM Systems</div>
+    </div>
+    <div class="card-tagline">Training data, RAG context, or residual memory surfaces PII, credentials, or IP in model outputs.</div>
+    <div class="card-flow">
+      <span class="flow-node">Crafted Prompt</span><span class="flow-sep">→</span>
+      <span class="flow-node">RAG / Weights</span><span class="flow-sep">→</span>
+      <span class="flow-node">Sensitive Output</span><span class="flow-sep">→</span>
+      <span class="flow-node">Breach</span>
+    </div>
+    <div class="card-vectors">
+      <div class="vector-item">Training / fine-tune extraction via memorization</div>
+      <div class="vector-item">RAG pipeline retrieval of sensitive chunks</div>
+      <div class="vector-item">Indirect / residual leakage across sessions</div>
+    </div>
+    <div class="card-bottom">
+      <div class="impact-tags">
+        <span class="impact-tag">PII/PHI/IP</span>
+        <span class="impact-tag">GDPR/HIPAA</span>
+        <span class="impact-tag">DSR failure</span>
+      </div>
+      <span class="no-cve">No CVE</span>
+    </div>
+  </div>
+
+  <!-- 02 -->
+  <div class="card" data-cat="identity">
+    <div class="card-top">
+      <div class="card-id">DSGAI02</div>
+      <div class="card-title">Agent Identity &amp; Credential Exposure</div>
+    </div>
+    <div class="card-tagline">Sub-agent compromise inherits operator-level tokens, propagating access across the full agent chain.</div>
+    <div class="card-flow">
+      <span class="flow-node">Compromise Sub-Agent</span><span class="flow-sep">→</span>
+      <span class="flow-node">Inherit Token</span><span class="flow-sep">→</span>
+      <span class="flow-node">Data Tier Access</span><span class="flow-sep">→</span>
+      <span class="flow-node">Exfil</span>
+    </div>
+    <div class="card-vectors">
+      <div class="vector-item">Prompt injection via tool output</div>
+      <div class="vector-item">NHI sprawl &amp; stale credentials</div>
+      <div class="vector-item">Cross-agent credential sharing</div>
+    </div>
+    <div class="card-bottom">
+      <div class="impact-tags">
+        <span class="impact-tag">Token theft</span>
+        <span class="impact-tag">Privilege escalation</span>
+        <span class="impact-tag">Sprawling IR</span>
+      </div>
+      <span class="no-cve">No CVE</span>
+    </div>
+  </div>
+
+  <!-- 03 -->
+  <div class="card" data-cat="governance">
+    <div class="card-top">
+      <div class="card-id">DSGAI03</div>
+      <div class="card-title">Shadow AI &amp; Unsanctioned Data Flows</div>
+    </div>
+    <div class="card-tagline">Employees paste sensitive data into external AI SaaS tools outside IT governance; vendor retains and trains on it.</div>
+    <div class="card-flow">
+      <span class="flow-node">Employee Pastes Data</span><span class="flow-sep">→</span>
+      <span class="flow-node">External AI SaaS</span><span class="flow-sep">→</span>
+      <span class="flow-node">Vendor Retains</span><span class="flow-sep">→</span>
+      <span class="flow-node">Silent Breach</span>
+    </div>
+    <div class="card-vectors">
+      <div class="vector-item">Consumer GenAI SaaS data harvest</div>
+      <div class="vector-item">Third-party SaaS embedded AI spillover</div>
+      <div class="vector-item">Cross-border jurisdictional trap</div>
+    </div>
+    <div class="card-bottom">
+      <div class="impact-tags">
+        <span class="impact-tag">Silent proliferation</span>
+        <span class="impact-tag">Lineage loss</span>
+        <span class="impact-tag">Regulatory risk</span>
+      </div>
+      <span class="no-cve">No CVE</span>
+    </div>
+  </div>
+
+  <!-- 04 -->
+  <div class="card" data-cat="poisoning">
+    <div class="card-top">
+      <div class="card-id">DSGAI04</div>
+      <div class="card-title">Data, Model &amp; Artifact Poisoning</div>
+    </div>
+    <div class="card-tagline">Malicious artifacts injected into supply chain, training pipeline, or RAG index compromise model behavior in production.</div>
+    <div class="card-flow">
+      <span class="flow-node">Supply Chain</span><span class="flow-sep">→</span>
+      <span class="flow-node">Artifact Tamper</span><span class="flow-sep">→</span>
+      <span class="flow-node">Training/RAG</span><span class="flow-sep">→</span>
+      <span class="flow-node">Backdoor</span>
+    </div>
+    <div class="card-vectors">
+      <div class="vector-item">Malicious model artifact (RCE on load)</div>
+      <div class="vector-item">Pipeline config tampering</div>
+      <div class="vector-item">Adversarial RAG embedding injection</div>
+    </div>
+    <div class="card-bottom">
+      <div class="impact-tags">
+        <span class="impact-tag">Backdoor</span>
+        <span class="impact-tag">Credential exfil</span>
+        <span class="impact-tag">Long MTTR</span>
+      </div>
+      <span class="cve-badge">CVE-2025-24357</span>
+    </div>
+  </div>
+
+  <!-- 05 -->
+  <div class="card" data-cat="poisoning">
+    <div class="card-top">
+      <div class="card-id">DSGAI05</div>
+      <div class="card-title">Data Integrity &amp; Validation Failures</div>
+    </div>
+    <div class="card-tagline">Adversarial inputs pass format validation and silently corrupt training pipelines or trigger path traversal via snapshot imports.</div>
+    <div class="card-flow">
+      <span class="flow-node">Malformed Input</span><span class="flow-sep">→</span>
+      <span class="flow-node">Passes Validation</span><span class="flow-sep">→</span>
+      <span class="flow-node">Pipeline Corrupt</span><span class="flow-sep">→</span>
+      <span class="flow-node">Compromise</span>
+    </div>
+    <div class="card-vectors">
+      <div class="vector-item">Adversarial CSV/JSON/Parquet ingestion</div>
+      <div class="vector-item">Snapshot path traversal (Qdrant)</div>
+      <div class="vector-item">Labeling queue injection</div>
+    </div>
+    <div class="card-bottom">
+      <div class="impact-tags">
+        <span class="impact-tag">Arbitrary file write</span>
+        <span class="impact-tag">Silent corruption</span>
+        <span class="impact-tag">Long MTTD</span>
+      </div>
+      <span class="cve-badge">CVE-2024-3584</span>
+    </div>
+  </div>
+
+  <!-- 06 -->
+  <div class="card" data-cat="identity">
+    <div class="card-top">
+      <div class="card-id">DSGAI06</div>
+      <div class="card-title">Tool, Plugin &amp; Agent Data Exchange Risks</div>
+    </div>
+    <div class="card-tagline">Full conversation context forwarded to plugin backends and MCP servers outside organizational control — no field-level scoping.</div>
+    <div class="card-flow">
+      <span class="flow-node">LLM Core</span><span class="flow-sep">→</span>
+      <span class="flow-node">Plugin Invocation</span><span class="flow-sep">→</span>
+      <span class="flow-node">Malicious Endpoint</span><span class="flow-sep">→</span>
+      <span class="flow-node">Exfil</span>
+    </div>
+    <div class="card-vectors">
+      <div class="vector-item">Plugin post-update compromise</div>
+      <div class="vector-item">Rogue agent via A2A / MCP</div>
+      <div class="vector-item">Tool poisoning via MCP metadata</div>
+    </div>
+    <div class="card-bottom">
+      <div class="impact-tags">
+        <span class="impact-tag">Context drain</span>
+        <span class="impact-tag">Cross-boundary theft</span>
+        <span class="impact-tag">DSR fragmentation</span>
+      </div>
+      <span class="cve-badge">CVE-2025-6514</span>
+    </div>
+  </div>
+
+  <!-- 07 -->
+  <div class="card" data-cat="governance">
+    <div class="card-top">
+      <div class="card-id">DSGAI07</div>
+      <div class="card-title">Data Governance, Lifecycle &amp; Classification</div>
+    </div>
+    <div class="card-tagline">Classification stops at source records — derived embeddings, weights, and backups carry no label and persist after deletion.</div>
+    <div class="card-flow">
+      <span class="flow-node">Unclassified Ingest</span><span class="flow-sep">→</span>
+      <span class="flow-node">Artifacts Created</span><span class="flow-sep">→</span>
+      <span class="flow-node">Source Deleted</span><span class="flow-sep">→</span>
+      <span class="flow-node">Artifacts Persist</span>
+    </div>
+    <div class="card-vectors">
+      <div class="vector-item">No label propagation to embeddings / weights</div>
+      <div class="vector-item">Erasure obligation missed on derived artifacts</div>
+      <div class="vector-item">Lineage gap blocks scoped remediation</div>
+    </div>
+    <div class="card-bottom">
+      <div class="impact-tags">
+        <span class="impact-tag">Erasure violated</span>
+        <span class="impact-tag">Data resurrection</span>
+        <span class="impact-tag">GDPR Art.17</span>
+      </div>
+      <span class="no-cve">No CVE</span>
+    </div>
+  </div>
+
+  <!-- 08 -->
+  <div class="card" data-cat="compliance">
+    <div class="card-top">
+      <div class="card-id">DSGAI08</div>
+      <div class="card-title">Non-Compliance &amp; Regulatory Violations</div>
+    </div>
+    <div class="card-tagline">Technical risks from DSGAI01/07 materialize as regulatory violations when organizations cannot demonstrate erasure or lawful basis.</div>
+    <div class="card-flow">
+      <span class="flow-node">Tech Risk</span><span class="flow-sep">→</span>
+      <span class="flow-node">DSR Request</span><span class="flow-sep">→</span>
+      <span class="flow-node">Cannot Demonstrate</span><span class="flow-sep">→</span>
+      <span class="flow-node">Enforcement</span>
+    </div>
+    <div class="card-vectors">
+      <div class="vector-item">Unlawful basis / expired consent</div>
+      <div class="vector-item">Erasure gap — weights retain deleted data</div>
+      <div class="vector-item">Lineage absence blocks legal remedy</div>
+    </div>
+    <div class="card-bottom">
+      <div class="impact-tags">
+        <span class="impact-tag">GDPR fines</span>
+        <span class="impact-tag">Model suspension</span>
+        <span class="impact-tag">EU AI Act</span>
+      </div>
+      <span class="no-cve">No CVE</span>
+    </div>
+  </div>
+
+  <!-- 09 -->
+  <div class="card" data-cat="leakage">
+    <div class="card-top">
+      <div class="card-id">DSGAI09</div>
+      <div class="card-title">Multimodal Capture &amp; Cross-Channel Leakage</div>
+    </div>
+    <div class="card-tagline">Images, audio, and documents processed for context — OCR/ASR derivatives stored unclassified, enabling biometric and credential leakage.</div>
+    <div class="card-flow">
+      <span class="flow-node">Media Upload</span><span class="flow-sep">→</span>
+      <span class="flow-node">OCR/ASR Extract</span><span class="flow-sep">→</span>
+      <span class="flow-node">Untagged Storage</span><span class="flow-sep">→</span>
+      <span class="flow-node">Bucket Leak</span>
+    </div>
+    <div class="card-vectors">
+      <div class="vector-item">Storage bucket misconfiguration</div>
+      <div class="vector-item">Cross-modal re-identification</div>
+      <div class="vector-item">Training pipeline ingestion without consent</div>
+    </div>
+    <div class="card-bottom">
+      <div class="impact-tags">
+        <span class="impact-tag">Biometric exposure</span>
+        <span class="impact-tag">DLP blind spot</span>
+        <span class="impact-tag">GDPR Art.9</span>
+      </div>
+      <span class="no-cve">No CVE</span>
+    </div>
+  </div>
+
+  <!-- 10 -->
+  <div class="card" data-cat="governance">
+    <div class="card-top">
+      <div class="card-id">DSGAI10</div>
+      <div class="card-title">Synthetic Data, Anonymization &amp; Transformation Pitfalls</div>
+    </div>
+    <div class="card-tagline">De-identification and synthetic generation create a false privacy guarantee — rare records are memorized and re-identifiable via membership inference.</div>
+    <div class="card-flow">
+      <span class="flow-node">De-ID Dataset</span><span class="flow-sep">→</span>
+      <span class="flow-node">Fine-tuned Model</span><span class="flow-sep">→</span>
+      <span class="flow-node">Shared Broadly</span><span class="flow-sep">→</span>
+      <span class="flow-node">Re-identification</span>
+    </div>
+    <div class="card-vectors">
+      <div class="vector-item">De-identification reversal via quasi-identifiers</div>
+      <div class="vector-item">Synthetic data false anonymity (MI &gt;0.9)</div>
+      <div class="vector-item">Transformation pipeline errors (silent corruption)</div>
+    </div>
+    <div class="card-bottom">
+      <div class="impact-tags">
+        <span class="impact-tag">Re-ID</span>
+        <span class="impact-tag">False security amplifies exposure</span>
+      </div>
+      <span class="no-cve">No CVE</span>
+    </div>
+  </div>
+
+  <!-- 11 -->
+  <div class="card" data-cat="infra">
+    <div class="card-top">
+      <div class="card-id">DSGAI11</div>
+      <div class="card-title">Cross-Context &amp; Multi-User Conversation Bleed</div>
+    </div>
+    <div class="card-tagline">Shared vector indexes, KV caches, or weak session IDs allow one tenant's prompts and data to leak into another's context.</div>
+    <div class="card-flow">
+      <span class="flow-node">Tenant A Data</span><span class="flow-sep">→</span>
+      <span class="flow-node">Shared Index</span><span class="flow-sep">→</span>
+      <span class="flow-node">Tenant B Query</span><span class="flow-sep">→</span>
+      <span class="flow-node">Cross-Tenant Leak</span>
+    </div>
+    <div class="card-vectors">
+      <div class="vector-item">Shared RAG index without tenant scoping</div>
+      <div class="vector-item">KV-cache side-channel (NDSS 2025)</div>
+      <div class="vector-item">Session ID enumeration</div>
+    </div>
+    <div class="card-bottom">
+      <div class="impact-tags">
+        <span class="impact-tag">Lateral exposure</span>
+        <span class="impact-tag">SaaS isolation breach</span>
+      </div>
+      <span class="cve-badge">CVE-2025-6515</span>
+    </div>
+  </div>
+
+  <!-- 12 -->
+  <div class="card" data-cat="infra">
+    <div class="card-top">
+      <div class="card-id">DSGAI12</div>
+      <div class="card-title">Unsafe Natural-Language Data Gateways</div>
+    </div>
+    <div class="card-tagline">LLM-to-SQL/Graph copilots generate arbitrary queries against privileged connections — prompt injection drives bulk exfiltration.</div>
+    <div class="card-flow">
+      <span class="flow-node">NL Input / Injection</span><span class="flow-sep">→</span>
+      <span class="flow-node">LLM Generates SQL</span><span class="flow-sep">→</span>
+      <span class="flow-node">Elevated Account</span><span class="flow-sep">→</span>
+      <span class="flow-node">Bulk Exfil</span>
+    </div>
+    <div class="card-vectors">
+      <div class="vector-item">RAG-injected SQL exfiltration</div>
+      <div class="vector-item">Schema enumeration → privilege escalation</div>
+      <div class="vector-item">Cross-tenant JOIN exploit</div>
+    </div>
+    <div class="card-bottom">
+      <div class="impact-tags">
+        <span class="impact-tag">Bulk exfil</span>
+        <span class="impact-tag">DBA-level access</span>
+        <span class="impact-tag">Forensic blur</span>
+      </div>
+      <span class="cve-badge">CVE-2024-8309</span>
+    </div>
+  </div>
+
+  <!-- 13 -->
+  <div class="card" data-cat="infra">
+    <div class="card-top">
+      <div class="card-id">DSGAI13</div>
+      <div class="card-title">Vector Store Platform Data Security</div>
+    </div>
+    <div class="card-tagline">Permissive vector APIs, unencrypted embeddings, and snapshot path traversal enable index exfiltration or full RCE.</div>
+    <div class="card-flow">
+      <span class="flow-node">Weak API / ACL</span><span class="flow-sep">→</span>
+      <span class="flow-node">k-NN Sweep</span><span class="flow-sep">→</span>
+      <span class="flow-node">Index Download</span><span class="flow-sep">→</span>
+      <span class="flow-node">RCE / Exfil</span>
+    </div>
+    <div class="card-vectors">
+      <div class="vector-item">Index exfiltration via k-NN sweep</div>
+      <div class="vector-item">Snapshot path traversal → RCE</div>
+      <div class="vector-item">Multi-tenant namespace confusion</div>
+    </div>
+    <div class="card-bottom">
+      <div class="impact-tags">
+        <span class="impact-tag">Cross-tenant</span>
+        <span class="impact-tag">RCE</span>
+        <span class="impact-tag">Index poisoning</span>
+      </div>
+      <span class="cve-badge">CVE-2024-3829</span>
+    </div>
+  </div>
+
+  <!-- 14 -->
+  <div class="card" data-cat="governance">
+    <div class="card-top">
+      <div class="card-id">DSGAI14</div>
+      <div class="card-title">Excessive Telemetry &amp; Monitoring Leakage</div>
+    </div>
+    <div class="card-tagline">Observability stacks aggregating full prompts, tokens, and tool outputs become the easiest exfiltration path — bypassing data classification.</div>
+    <div class="card-flow">
+      <span class="flow-node">Debug Mode On</span><span class="flow-sep">→</span>
+      <span class="flow-node">SIEM Aggregates</span><span class="flow-sep">→</span>
+      <span class="flow-node">Analyst Phished</span><span class="flow-sep">→</span>
+      <span class="flow-node">Bulk Export</span>
+    </div>
+    <div class="card-vectors">
+      <div class="vector-item">Debug mode left permanently enabled</div>
+      <div class="vector-item">Third-party APM vendor risk (Mixpanel 2025)</div>
+      <div class="vector-item">Mis-scoped SIEM credential harvest</div>
+    </div>
+    <div class="card-bottom">
+      <div class="impact-tags">
+        <span class="impact-tag">Retroactive exposure</span>
+        <span class="impact-tag">Credential harvest</span>
+      </div>
+      <span class="no-cve">No CVE</span>
+    </div>
+  </div>
+
+  <!-- 15 -->
+  <div class="card" data-cat="compliance">
+    <div class="card-top">
+      <div class="card-id">DSGAI15</div>
+      <div class="card-title">Over-Broad Context Windows &amp; Prompt Over-Sharing</div>
+    </div>
+    <div class="card-tagline">Full records auto-appended to prompts and sent to external LLM providers — far beyond what the task requires, scattered across provider logs and caches.</div>
+    <div class="card-flow">
+      <span class="flow-node">Simple Query</span><span class="flow-sep">→</span>
+      <span class="flow-node">Gateway Appends 360°</span><span class="flow-sep">→</span>
+      <span class="flow-node">External Provider</span><span class="flow-sep">→</span>
+      <span class="flow-node">Provider Incident</span>
+    </div>
+    <div class="card-vectors">
+      <div class="vector-item">Provider prompt retention breach</div>
+      <div class="vector-item">Edge cache misconfiguration</div>
+      <div class="vector-item">Framework default auto-context feature</div>
+    </div>
+    <div class="card-bottom">
+      <div class="impact-tags">
+        <span class="impact-tag">PII overexposure</span>
+        <span class="impact-tag">Impossible to contain</span>
+        <span class="impact-tag">Purpose limitation</span>
+      </div>
+      <span class="no-cve">No CVE</span>
+    </div>
+  </div>
+
+  <!-- 16 -->
+  <div class="card" data-cat="attack">
+    <div class="card-top">
+      <div class="card-id">DSGAI16</div>
+      <div class="card-title">Endpoint &amp; Browser Assistant Overreach</div>
+    </div>
+    <div class="card-tagline">AI extensions with broad "read all sites" and filesystem permissions hijacked via HashJack URL injection to exfiltrate SSH keys, .env, and intranet content.</div>
+    <div class="card-flow">
+      <span class="flow-node">Malicious Page</span><span class="flow-sep">→</span>
+      <span class="flow-node">Extension Reads DOM</span><span class="flow-sep">→</span>
+      <span class="flow-node">Injected Instruction</span><span class="flow-sep">→</span>
+      <span class="flow-node">Local Files Exfil</span>
+    </div>
+    <div class="card-vectors">
+      <div class="vector-item">HashJack URL fragment injection</div>
+      <div class="vector-item">Malicious extension update (supply chain)</div>
+      <div class="vector-item">Sensitive console in extension-active session</div>
+    </div>
+    <div class="card-bottom">
+      <div class="impact-tags">
+        <span class="impact-tag">SSH key theft</span>
+        <span class="impact-tag">CASB blind spot</span>
+        <span class="impact-tag">Local memory target</span>
+      </div>
+      <span class="no-cve">No CVE</span>
+    </div>
+  </div>
+
+  <!-- 17 -->
+  <div class="card" data-cat="infra">
+    <div class="card-top">
+      <div class="card-id">DSGAI17</div>
+      <div class="card-title">Data Availability &amp; Resilience Failures</div>
+    </div>
+    <div class="card-tagline">Silent failover to stale vector DB replica produces misinformation indistinguishable from correct output — including resurrecting DSR-erased records.</div>
+    <div class="card-flow">
+      <span class="flow-node">Vector DB Fails</span><span class="flow-sep">→</span>
+      <span class="flow-node">Stale Failover</span><span class="flow-sep">→</span>
+      <span class="flow-node">No Staleness Signal</span><span class="flow-sep">→</span>
+      <span class="flow-node">Silent Misinformation</span>
+    </div>
+    <div class="card-vectors">
+      <div class="vector-item">Vector DB saturation under query burst</div>
+      <div class="vector-item">Stale replica serves DSR-deleted records</div>
+      <div class="vector-item">Corrupted artifact — unvalidated restore</div>
+    </div>
+    <div class="card-bottom">
+      <div class="impact-tags">
+        <span class="impact-tag">Silent misinformation</span>
+        <span class="impact-tag">DSR violation</span>
+        <span class="impact-tag">Unverifiable recovery</span>
+      </div>
+      <span class="no-cve">No CVE</span>
+    </div>
+  </div>
+
+  <!-- 18 -->
+  <div class="card" data-cat="attack">
+    <div class="card-top">
+      <div class="card-id">DSGAI18</div>
+      <div class="card-title">Inference &amp; Data Reconstruction</div>
+    </div>
+    <div class="card-tagline">Iterative querying infers training membership or reconstructs sensitive data — no raw record ever directly exposed. RAG caches compound the signal.</div>
+    <div class="card-flow">
+      <span class="flow-node">Iterative Probes</span><span class="flow-sep">→</span>
+      <span class="flow-node">Signal Accumulation</span><span class="flow-sep">→</span>
+      <span class="flow-node">Membership Confirmed</span><span class="flow-sep">→</span>
+      <span class="flow-node">Privacy Violation</span>
+    </div>
+    <div class="card-vectors">
+      <div class="vector-item">Membership inference (&gt;0.9 accuracy, SaTML 2026)</div>
+      <div class="vector-item">Embedding inversion via k-NN sweep</div>
+      <div class="vector-item">RAG cross-session signal accumulation</div>
+    </div>
+    <div class="card-bottom">
+      <div class="impact-tags">
+        <span class="impact-tag">Indirect inference breach</span>
+        <span class="impact-tag">LoRA extraction</span>
+      </div>
+      <span class="no-cve">No CVE</span>
+    </div>
+  </div>
+
+  <!-- 19 -->
+  <div class="card" data-cat="governance">
+    <div class="card-top">
+      <div class="card-id">DSGAI19</div>
+      <div class="card-title">Human-in-the-Loop &amp; Labeler Overexposure</div>
+    </div>
+    <div class="card-tagline">RLHF and annotation pipelines expose un-minimized sensitive records to large, poorly-controlled crowd labeler populations — enabling insider exfiltration or endpoint compromise.</div>
+    <div class="card-flow">
+      <span class="flow-node">Export Batch</span><span class="flow-sep">→</span>
+      <span class="flow-node">Crowd Platform</span><span class="flow-sep">→</span>
+      <span class="flow-node">Labelers See Full PII</span><span class="flow-sep">→</span>
+      <span class="flow-node">Insider Exfil</span>
+    </div>
+    <div class="card-vectors">
+      <div class="vector-item">Crowd platform PHI export without minimization</div>
+      <div class="vector-item">Malware on labeler endpoint</div>
+      <div class="vector-item">Task field creep — minimization silently broken</div>
+    </div>
+    <div class="card-bottom">
+      <div class="impact-tags">
+        <span class="impact-tag">Mass exposure</span>
+        <span class="impact-tag">Insider threat</span>
+        <span class="impact-tag">No audit trail</span>
+      </div>
+      <span class="no-cve">No CVE</span>
+    </div>
+  </div>
+
+  <!-- 20 -->
+  <div class="card" data-cat="attack">
+    <div class="card-top">
+      <div class="card-id">DSGAI20</div>
+      <div class="card-title">Model Exfiltration &amp; IP Replication</div>
+    </div>
+    <div class="card-tagline">Systematic API probing harvests 100K+ input/output pairs for knowledge distillation — replicating proprietary reasoning at a fraction of the original training cost.</div>
+    <div class="card-flow">
+      <span class="flow-node">Legitimate API Access</span><span class="flow-sep">→</span>
+      <span class="flow-node">100K+ Probes</span><span class="flow-sep">→</span>
+      <span class="flow-node">I/O Pairs Harvested</span><span class="flow-sep">→</span>
+      <span class="flow-node">Student Model</span>
+    </div>
+    <div class="card-vectors">
+      <div class="vector-item">Chain-of-thought coercion (Google/Anthropic Feb 2026)</div>
+      <div class="vector-item">Systematic capability probing across accounts</div>
+      <div class="vector-item">Fine-tuned adapter extraction</div>
+    </div>
+    <div class="card-bottom">
+      <div class="impact-tags">
+        <span class="impact-tag">IP theft</span>
+        <span class="impact-tag">Competitive loss</span>
+        <span class="impact-tag">Untraceable</span>
+      </div>
+      <span class="no-cve">No CVE</span>
+    </div>
+  </div>
+
+  <!-- 21 -->
+  <div class="card" data-cat="poisoning">
+    <div class="card-top">
+      <div class="card-id">DSGAI21</div>
+      <div class="card-title">Disinformation &amp; Integrity Attacks via Data Poisoning</div>
+    </div>
+    <div class="card-tagline">False data injected into trusted sources is retrieved and surfaced by AI as authoritative, grounded output — the model does not hallucinate; the data was poisoned.</div>
+    <div class="card-flow">
+      <span class="flow-node">Seed False Data</span><span class="flow-sep">→</span>
+      <span class="flow-node">Trusted Source</span><span class="flow-sep">→</span>
+      <span class="flow-node">RAG Retrieves</span><span class="flow-sep">→</span>
+      <span class="flow-node">Authoritative Disinfo</span>
+    </div>
+    <div class="card-vectors">
+      <div class="vector-item">Zero-day remediation poisoning at crisis timing</div>
+      <div class="vector-item">Open training corpus poisoning (low-frequency)</div>
+      <div class="vector-item">Internal wiki write-access compromise</div>
+    </div>
+    <div class="card-bottom">
+      <div class="impact-tags">
+        <span class="impact-tag">False beliefs in weights</span>
+        <span class="impact-tag">Operational damage</span>
+        <span class="impact-tag">Grok incident</span>
+      </div>
+      <span class="no-cve">No CVE</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="page-footer">
+  OWASP GenAI Data Security Framework · DSGAI01–21 · 2025 &nbsp;·&nbsp;
+  Cross-references and mitigations: see individual attack path diagrams
+</div>
+
+</body>
+</html>

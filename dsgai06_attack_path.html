@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSGAI06 — Tool, Plugin & Agent Data Exchange Risks: Attack Path</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: #f0f4f8;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 24px;
+    min-height: 100vh;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.13);
+    width: 880px;
+    max-width: 100%;
+  }
+
+  .header {
+    background: #1e0f2e;
+    color: #fff;
+    padding: 28px 36px 22px;
+    text-align: center;
+  }
+  .header .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: #c084fc;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .header h1 { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+  .header p  { font-size: 13px; color: #c4a8e0; font-weight: 400; }
+
+  .body { padding: 32px 36px 28px; display: flex; flex-direction: column; gap: 0; }
+
+  .section-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: #6b7a99; margin-bottom: 10px; padding-left: 2px;
+  }
+
+  /* node colours */
+  .node-attacker  { background:#fff0f0; border-color:#e05c5c; color:#c0392b; }
+  .node-action    { background:#fff8ec; border-color:#f0a830; color:#7a4f00; }
+  .node-system    { background:#eaf2ff; border-color:#5b8dee; color:#1a3a7a; }
+  .node-leak      { background:#ffeaea; border-color:#e05c5c; color:#7a1a1a; }
+  .node-purple    { background:#f5f0ff; border-color:#c084fc; color:#4a1a7a; }
+  .node-poison    { background:#fffbe6; border-color:#d4a000; color:#5a3e00; }
+
+  .divider { height: 1px; background: #e4eaf4; margin: 0 0 20px; }
+
+  /* ── MAIN FLOW ── */
+  .main-flow {
+    display: flex; align-items: center; gap: 0;
+    margin-bottom: 20px; background: #f7f9fc;
+    border: 1.5px solid #d8e2f0; border-radius: 12px;
+    padding: 16px 18px; overflow-x: auto;
+  }
+  .flow-step { flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; min-width:108px; }
+  .flow-box {
+    border-radius:8px; padding:9px 10px; font-size:12px;
+    font-weight:600; text-align:center; line-height:1.3; width:100%; border:1.5px solid;
+  }
+  .flow-sub { font-size:10px; color:#8896b0; text-align:center; font-weight:400; line-height:1.3; max-width:115px; }
+  .flow-arr { font-size:20px; color:#aab5cc; flex-shrink:0; padding:0 4px; margin-bottom:20px; }
+  .flow-arr.red    { color:#e05c5c; }
+  .flow-arr.amber  { color:#f0a830; }
+  .flow-arr.purple { color:#c084fc; }
+
+  /* ── TRUST BOUNDARY VISUAL ── */
+  .boundary-section {
+    background: #f7f9fc;
+    border: 1.5px solid #d8e2f0;
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+  }
+  .boundary-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: #6b7a99; margin-bottom: 14px; text-align: center;
+  }
+  .boundary-row {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+  }
+  .b-zone {
+    flex: 1;
+    border-radius: 8px;
+    padding: 12px 12px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .b-zone.safe {
+    background: #eaf2ff;
+    border: 1.5px solid #5b8dee;
+  }
+  .b-zone.danger {
+    background: #fff0f0;
+    border: 1.5px solid #e05c5c;
+  }
+  .b-zone-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; margin-bottom: 4px;
+  }
+  .safe .b-zone-label  { color: #1a3a7a; }
+  .danger .b-zone-label { color: #7a1a1a; }
+
+  .b-item {
+    border-radius: 6px; padding: 7px 9px; font-size: 11px;
+    font-weight: 600; line-height: 1.3; text-align: center; border: 1.5px solid;
+  }
+
+  .b-arrow-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+    gap: 4px;
+  }
+  .b-arrow-big {
+    font-size: 26px;
+    color: #e05c5c;
+    line-height: 1;
+  }
+  .b-arrow-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: #e05c5c;
+    background: #fff0f0;
+    border: 1px solid #e05c5c;
+    border-radius: 4px;
+    padding: 1px 6px;
+    white-space: nowrap;
+  }
+
+  /* ── COLUMNS ── */
+  .columns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+  .attack-column { background:#f7f9fc; border:1.5px solid #d8e2f0; border-radius:10px; padding:16px 14px; }
+  .attack-column h3 {
+    font-size:11px; font-weight:700; text-transform:uppercase;
+    letter-spacing:1.2px; color:#6b7a99; margin-bottom:12px; text-align:center;
+  }
+  .node {
+    border-radius:8px; padding:9px 12px; font-size:12px;
+    font-weight:600; line-height:1.35; text-align:center;
+    margin-bottom:6px; border:1.5px solid;
+  }
+  .arrow { display:flex; justify-content:center; align-items:center; height:22px; color:#aab5cc; font-size:18px; line-height:1; }
+  .arrow.red    { color:#e05c5c; }
+  .arrow.amber  { color:#f0a830; }
+  .arrow.purple { color:#c084fc; }
+
+  .tag {
+    display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:9.5px;
+    background:#1e0f2e; color:#c084fc; border-radius:4px;
+    padding:1px 6px; margin-bottom:4px; letter-spacing:0.5px;
+  }
+
+  /* ── IMPACT ROW ── */
+  .impact-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px; }
+  .impact-chip {
+    border-radius:8px; padding:9px 10px; font-size:11.5px;
+    font-weight:600; text-align:center; line-height:1.3; border:1.5px solid;
+  }
+  .chip-red    { background:#fff0f0; border-color:#e05c5c; color:#c0392b; }
+  .chip-amber  { background:#fff8ec; border-color:#f0a830; color:#7a4f00; }
+  .chip-purple { background:#f5f0ff; border-color:#c084fc; color:#4a1a7a; }
+  .chip-blue   { background:#eaf2ff; border-color:#5b8dee; color:#1a3a7a; }
+
+  .footer {
+    background:#1e0f2e; color:#c4a8e0; font-size:11px;
+    text-align:center; padding:11px 20px; letter-spacing:0.3px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="label">DSGAI06 · Attack Path</div>
+    <h1>Tool, Plugin &amp; Agent Data Exchange Risks</h1>
+    <p>Every tool invocation and agent handoff is a potential exfiltration boundary</p>
+  </div>
+
+  <div class="body">
+
+    <!-- PRIMARY FLOW -->
+    <div class="section-label">Primary Attack Flow</div>
+    <div class="main-flow">
+      <div class="flow-step">
+        <div class="flow-box node-system">Hardened LLM Core</div>
+        <div class="flow-sub">Core stack is secure — but plugins are enabled</div>
+      </div>
+      <div class="flow-arr purple">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-purple">Tool / Plugin Invocation</div>
+        <div class="flow-sub">Full conversation context forwarded to integration endpoint</div>
+      </div>
+      <div class="flow-arr amber">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-action">Malicious / Compromised Endpoint</div>
+        <div class="flow-sub">Post-update compromise, rogue agent, or poisoned MCP server</div>
+      </div>
+      <div class="flow-arr red">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-leak">Context Drained Silently</div>
+        <div class="flow-sub">Secrets, PII, tokens forwarded to attacker backend</div>
+      </div>
+      <div class="flow-arr red">→</div>
+      <div class="flow-step">
+        <div class="flow-box node-leak">💥 Exfiltration</div>
+        <div class="flow-sub">Data outside org control plane — permanently</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- TRUST BOUNDARY VISUAL -->
+    <div class="boundary-section">
+      <div class="boundary-title">The Core Problem — Data Crosses the Trust Boundary on Every Tool Call</div>
+      <div class="boundary-row">
+
+        <div class="b-zone safe">
+          <div class="b-zone-label">🔒 Inside Org Control Plane</div>
+          <div class="b-item node-system">LLM Core (hardened)</div>
+          <div class="b-item node-system">Conversation context<br><span style="font-weight:400;font-size:10px;">secrets · PII · tokens · internal URLs</span></div>
+          <div class="b-item node-system">System prompt &amp; operator config</div>
+          <div class="b-item node-system">Agent memory &amp; retrieval context</div>
+        </div>
+
+        <div class="b-arrow-col">
+          <div class="b-arrow-big">→</div>
+          <div class="b-arrow-label">FULL CONTEXT<br>FORWARDED</div>
+          <div style="font-size:9px;color:#e05c5c;text-align:center;margin-top:4px;line-height:1.3;">No field-level<br>scoping by default</div>
+        </div>
+
+        <div class="b-zone danger">
+          <div class="b-zone-label">⚠ Outside Org Control Plane</div>
+          <div class="b-item node-attacker">Plugin backend (may be malicious)</div>
+          <div class="b-item node-action">MCP server (no default auth)</div>
+          <div class="b-item node-action">A2A peer agent (no mutual auth)</div>
+          <div class="b-item node-attacker">Sub-processor / third-party SaaS<br><span style="font-weight:400;font-size:10px;">no DPA · unknown retention · no kill-switch</span></div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- 3 ATTACK VECTORS -->
+    <div class="section-label">Attack Vectors</div>
+    <div class="columns">
+
+      <!-- VECTOR 1 -->
+      <div class="attack-column">
+        <h3>① Plugin Post-Update Compromise</h3>
+        <div class="tag">SUPPLY CHAIN</div>
+        <div class="node node-system">Plugin passes initial security review ✓</div>
+        <div class="arrow">↓</div>
+        <div class="node node-action">Routine update ships malicious backend change</div>
+        <div class="arrow">↓</div>
+        <div class="node node-purple">Full conversation transcripts forwarded over HTTP</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-action">PHI, incident links, PII stored indefinitely on vendor backend</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">Vendor misconfiguration exposes DB — 100k conversations leaked</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ One-time vetting is insufficient — post-update risk not automatically detected
+        </div>
+      </div>
+
+      <!-- VECTOR 2 -->
+      <div class="attack-column">
+        <h3>② Rogue Agent via A2A / MCP</h3>
+        <div class="tag">PROTOCOL WEAKNESS</div>
+        <div class="node node-attacker">Attacker controls or compromises agent boundary</div>
+        <div class="arrow">↓</div>
+        <div class="node node-action">No mutual auth — rogue agent impersonates trusted peer</div>
+        <div class="arrow">↓</div>
+        <div class="node node-purple">Harvests conversation context including API keys &amp; tokens</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-action">Injects malicious tool calls into downstream agent execution</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">Operator-scoped OAuth token exploited — full data-tier access</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ MCP: no default auth · A2A: OAuth config is primary boundary, frequently misconfigured
+        </div>
+      </div>
+
+      <!-- VECTOR 3 -->
+      <div class="attack-column">
+        <h3>③ Tool Poisoning via MCP Metadata</h3>
+        <div class="tag">PROMPT INJECTION</div>
+        <div class="node node-attacker">Attacker crafts malicious MCP server description</div>
+        <div class="arrow">↓</div>
+        <div class="node node-action">Description embeds instructions treated as trusted by the model</div>
+        <div class="arrow">↓</div>
+        <div class="node node-purple">Model chains tool calls beyond intended scope</div>
+        <div class="arrow amber">↓</div>
+        <div class="node node-poison">Conversation context — including embedded API keys — exfiltrated to attacker endpoint</div>
+        <div class="arrow red">↓</div>
+        <div class="node node-leak">No network-layer compromise needed — model complies with poisoned manifest</div>
+        <div style="font-size:10.5px;color:#888;margin-top:8px;line-height:1.4;">
+          ⚠ CVE-2025-6514 — MCP OS command injection via crafted authorization endpoint URL
+        </div>
+      </div>
+
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- IMPACT -->
+    <div class="section-label">Resulting Impact</div>
+    <div class="impact-row">
+      <div class="impact-chip chip-red">📤 Uncontrolled Data Spread<br><span style="font-weight:400;font-size:10.5px;">Sensitive data at third-party processors outside governance</span></div>
+      <div class="impact-chip chip-amber">🔑 Cross-Boundary Data Theft<br><span style="font-weight:400;font-size:10.5px;">Unauthorized actions via stolen agent context</span></div>
+      <div class="impact-chip chip-purple">📋 Fragmented DSR Compliance<br><span style="font-weight:400;font-size:10.5px;">Rights unenforceable across many small vendors</span></div>
+      <div class="impact-chip chip-blue">🚪 Plugin as Primary Exfil Path<br><span style="font-weight:400;font-size:10.5px;">Core LLM locked down — integration layer is the gap</span></div>
+    </div>
+
+  </div><!-- /body -->
+
+  <div class="footer">CVE-2025-66404 · CVE-2025-6514 · ChatGPT Plugin Ecosystem Vulnerabilities · Salt Security Research · OWASP LLM03:2025</div>
+</div>
+</body>
+</html>
