@@ -1154,10 +1154,14 @@ export default function PolicyGenerator() {
     )
   }
 
+  // activePolicy state for step 4
+  const generatedKeys = Object.keys(generatedPolicies)
+  const [activeTab, setActiveTab] = useState('aup')
+  const effectiveTab = generatedKeys.includes(activeTab) ? activeTab : (generatedKeys[0] || 'aup')
+
   function renderStep4() {
-    const [activeTab, setActiveTab] = useState(Object.keys(generatedPolicies)[0] || 'aup')
-    const activePolicyText = generatedPolicies[activeTab] || ''
-    const activeTitle = policyTypes.find(p => p.id === activeTab)?.title || ''
+    const activePolicyText = generatedPolicies[effectiveTab] || ''
+    const activeTitle = policyTypes.find(p => p.id === effectiveTab)?.title || ''
 
     return (
       <div className="space-y-4">
@@ -1170,7 +1174,7 @@ export default function PolicyGenerator() {
                 key={id}
                 onClick={() => setActiveTab(id)}
                 className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors ${
-                  activeTab === id
+                  effectiveTab === id
                     ? (dark ? 'bg-gray-700 text-white' : 'bg-white text-gray-900 shadow-sm')
                     : (dark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700')
                 }`}
@@ -1184,7 +1188,7 @@ export default function PolicyGenerator() {
         {/* Actions */}
         <div className="flex flex-wrap gap-2">
           <button
-            onClick={() => handleDownload(activeTab, activeTitle)}
+            onClick={() => handleDownload(effectiveTab, activeTitle)}
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
           >
             <Download size={16} />
