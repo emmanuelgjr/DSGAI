@@ -26,27 +26,27 @@ Organizations deploying LLMs, RAG pipelines, AI agents, and fine-tuned models ne
 
 | # | Risk | Category |
 |---|------|----------|
-| DSGAI01 | Sensitive Data Leakage | Leakage |
+| DSGAI01 | Sensitive Data Leakage | Data Leakage |
 | DSGAI02 | Agent Identity & Credential Exposure | Identity & Access |
-| DSGAI03 | Shadow AI & Unsanctioned Data Flows | Governance |
-| DSGAI04 | Data, Model & Artifact Poisoning | Poisoning & Integrity |
-| DSGAI05 | Data Integrity & Validation Failures | Poisoning & Integrity |
+| DSGAI03 | Shadow AI & Unsanctioned Data Flows | Governance & Lifecycle |
+| DSGAI04 | Data, Model & Artifact Poisoning | Data Poisoning |
+| DSGAI05 | Data Integrity & Validation Failures | Data Poisoning |
 | DSGAI06 | Tool, Plugin & Agent Data Exchange Risks | Identity & Access |
-| DSGAI07 | Data Governance, Lifecycle & Classification | Governance |
-| DSGAI08 | Non-Compliance & Regulatory Violations | Compliance |
-| DSGAI09 | Multimodal Capture & Cross-Channel Leakage | Leakage |
-| DSGAI10 | Synthetic Data, Anonymization & Transformation Pitfalls | Governance |
+| DSGAI07 | Data Governance, Lifecycle & Classification | Governance & Lifecycle |
+| DSGAI08 | Non-Compliance & Regulatory Violations | Compliance & Regulatory |
+| DSGAI09 | Multimodal Capture & Cross-Channel Leakage | Data Leakage |
+| DSGAI10 | Synthetic Data, Anonymization & Transformation Pitfalls | Governance & Lifecycle |
 | DSGAI11 | Cross-Context & Multi-User Conversation Bleed | Infrastructure |
 | DSGAI12 | Unsafe Natural-Language Data Gateways | Infrastructure |
 | DSGAI13 | Vector Store Platform Data Security | Infrastructure |
-| DSGAI14 | Excessive Telemetry & Monitoring Leakage | Governance |
-| DSGAI15 | Over-Broad Context Windows & Prompt Over-Sharing | Compliance |
-| DSGAI16 | Endpoint & Browser Assistant Overreach | Adversarial |
+| DSGAI14 | Excessive Telemetry & Monitoring Leakage | Governance & Lifecycle |
+| DSGAI15 | Over-Broad Context Windows & Prompt Over-Sharing | Compliance & Regulatory |
+| DSGAI16 | Endpoint & Browser Assistant Overreach | Adversarial Attacks |
 | DSGAI17 | Data Availability & Resilience Failures | Infrastructure |
-| DSGAI18 | Inference & Data Reconstruction | Adversarial |
-| DSGAI19 | Human-in-the-Loop & Labeler Overexposure | Governance |
-| DSGAI20 | Model Exfiltration & IP Replication | Adversarial |
-| DSGAI21 | Disinformation & Integrity Attacks via Data Poisoning | Poisoning & Integrity |
+| DSGAI18 | Inference & Data Reconstruction | Adversarial Attacks |
+| DSGAI19 | Human-in-the-Loop & Labeler Overexposure | Governance & Lifecycle |
+| DSGAI20 | Model Exfiltration & IP Replication | Adversarial Attacks |
+| DSGAI21 | Disinformation & Integrity Attacks via Data Poisoning | Data Poisoning |
 
 ---
 
